@@ -7,7 +7,7 @@ import os
 from nozo import getImage
 import pickle
 from tag import TagInfo
-from ai import RES_FINE, RES_NEGATIVE, RES_SAVE, RES_WOW
+from ai import ALL_RESPONSES
 
 def listAll(x):
   return os.listdir(x)
@@ -43,22 +43,23 @@ def saveNewTagInfo(tag):
   tagInfo.parseTag(tag)
   saveTagInfo(tagInfo)
 
-def saveOverall(overall):
-  with open(OVERALL, 'wb+') as f:
-      pickle.dump(overall, f)
-
-def accOverall(response):
+def loadOverall():
   try:
     with open(OVERALL, 'rb') as f:
-      overall = pickle.load(f)
+      return pickle.load(f)
   except FileNotFoundError:
-    saveOverall({
-      RES_FINE: 0, 
-      RES_NEGATIVE: 0, 
-      RES_SAVE: 0, 
-      RES_WOW: 0,
-    })
-    return accOverall(response)
+    overall = {}
+    for response in ALL_RESPONSES:
+      overall[response] = 0
+    saveOverall(overall)
+    return overall
+
+def saveOverall(overall):
+  with open(OVERALL, 'wb+') as f:
+    pickle.dump(overall, f)
+
+def accOverall(response):
+  overall = loadOverall()
   overall[response] += 1
   print('overall', overall)
   saveOverall(overall)
