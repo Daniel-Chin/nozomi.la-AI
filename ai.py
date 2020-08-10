@@ -1,7 +1,8 @@
 DEBUG = True
 
 EXPLORE_PROB = .1
-POOL_SIZE = 64
+# POOL_SIZE = 64
+POOL_SIZE = 8
 VIEW_RATIO = .2
 
 RES_NEGATIVE = 'RES_NEGATIVE'
@@ -44,7 +45,10 @@ def score(n_responses):
 
 def predict(doc: Doc):
   overall = database.loadOverall()
-  score_baseline = score(overall)
+  try:
+    score_baseline = score(overall)
+  except ZeroDivisionError:
+    score_baseline = 0
 
   result = 0
   for tag in doc.tags:
@@ -60,6 +64,8 @@ def predict(doc: Doc):
     else:
       goodness *= WEIGHT.get(tag.type, 1)
     result += goodness
+  if DEBUG:
+    print('predict', doc.id, result)
   return result
 
 def sample(population):

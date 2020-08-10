@@ -2,7 +2,7 @@ from requests import get
 from math import floor
 from json import loads
 from functools import lru_cache
-from ai import POOL_SIZE
+from ai import POOL_SIZE, DEBUG
 from threading import Thread, Lock
 
 def askMaster(start, end):
@@ -65,11 +65,16 @@ class ImageWorker(Thread):
     self.url = url
     self.lock = Lock()
     self.result = None
+    self.start()
   
   def start(self):
+    if DEBUG:
+      print('ImageWorker starts...')
     content = getImage(self.url)
     with self.lock:
       self.result = content
+    if DEBUG:
+      print('ImageWorker ends.')
   
   def check(self):
     with self.lock:

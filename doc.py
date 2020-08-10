@@ -25,12 +25,12 @@ class Doc:
     # Must have >=1 tags. Must not have video. 
     for tag_type in ('general', 'character', 'artist'):
       for i in json.get(tag_type, []):
-        self.tags.append(Tag(i.tag, i.tagname_display, i.tagtype))
+        self.tags.append(Tag(i['tag'], i['tagname_display'], i['tagtype']))
     if not self.tags:
       raise DocNotSuitable
     for i in json['imageurls']:
       if not i['is_video']:
-        self.img_urls.append(i['imageurl'])
+        self.img_urls.append('https:' + i['imageurl'])
     if not self.img_urls:
       raise DocNotSuitable
     self.id = str(json['postid'])

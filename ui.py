@@ -23,6 +23,11 @@ def getResponse(doc, mode):
   root.title(TITLE)
   root.root = root
   root.doc = doc
+  w, h = root.winfo_screenwidth(), root.winfo_screenheight()
+  root.geometry("%dx%d+0+0" % (w, h))
+
+  resize = h / (doc.height * len(doc.img_urls))
+  resize = min(resize, w / doc.width)
 
   imgWorkers = []
   imgLabels = []
@@ -33,26 +38,32 @@ def getResponse(doc, mode):
     imgLabel.pack()
     imgLabels.append(imgLabel)
   
-  root.after(LOOP_INTERVAL, loop, root, imgWorkers, imgLabels.copy(), result)
+  root.after(
+    LOOP_INTERVAL, loop, root, imgWorkers, 
+    imgLabels.copy(), result, resize,
+  )
   root.bind('<Key>', onKey)
   root.buttons = {}
 
-  w, h = root.winfo_screenwidth(), root.winfo_screenheight()
-  root.geometry("%dx%d+0+0" % (w, h))
   root.mainloop()
   return result[0]
 
-def loop(root, imgWorkers, imgLabelsLeft, result):
-  root.after(LOOP_INTERVAL, loop, root, imgWorkers, imgLabelsLeft, result)
+def loop(root, imgWorkers, imgLabelsLeft, result, resize):
+  root.after(
+    LOOP_INTERVAL, loop, root, imgWorkers, 
+    imgLabelsLeft, result, resize,
+  )
   for i, worker in [*enumerate(imgWorkers)]:
     img_bytes = worker.check()
-    if img is not None:
+    if img_bytes is not None:
       label = imgLabelsLeft.pop(i)
       imgWorkers.pop(i)
       bio = BytesIO()
       bio.write(img_bytes)
       bio.seek(0)
-      image = Image.open(bio)
+      image = Image.open(bio).resize((
+        root.doc.width * resize, root.doc.height * resize
+      ), Image.ANTIALIAS)
       photo = ImageTk.PhotoImage(image)
       label.configure(text=None, image=photo)
       label.bio = bio # keep ref
@@ -80,7 +91,7 @@ def onClick(event):
     for label in root.imgLabels:
       label.bio.seek(0)
       imgs.append(label.bio.getbuffer())
-    database.saveImg(root.doc, imgs, root.doc.img_type)
+    database.saveImg(root.doc, imgs)
   button.root.destroy()
 
 def onKey(event):
