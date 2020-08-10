@@ -67,7 +67,7 @@ class ImageWorker(Thread):
     self.result = None
     self.start()
   
-  def start(self):
+  def run(self):
     if DEBUG:
       print('ImageWorker starts...')
     content = getImage(self.url)
