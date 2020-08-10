@@ -14,6 +14,7 @@ SCORE = {
 
 WEIGHT = {
   'artist': 4,
+  'character': 2,
 }
 
 from doc import Doc, Tag
@@ -39,7 +40,11 @@ def predict(doc: Doc):
     except FileNotFoundError:
       database.saveNewTagInfo(tag)
       tagInfo = database.loadTagInfo(tag.name)
-    goodness = score(tagInfo.n_responses) - score_baseline
-    goodness *= WEIGHT.get(tag.type, 1)
+    try:
+      goodness = score(tagInfo.n_responses) - score_baseline
+    except ZeroDivisionError:
+      goodness = 0
+    else:
+      goodness *= WEIGHT.get(tag.type, 1)
     result += goodness
   return result
