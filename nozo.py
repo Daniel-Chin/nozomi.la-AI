@@ -1,6 +1,8 @@
 from requests import get
 from math import floor
 from json import loads
+from functools import lru_cache
+from ai import POOL_SIZE
 
 def askMaster(start, end):
   r = get('https://n.nozomi.la/index.nozomi', headers={
@@ -28,6 +30,7 @@ def urlJSON(doc_id):
   b = doc_id[-3:-1]
   return f'https://j.nozomi.la/post/{a}/{b}/{doc_id}.json'
 
+@lru_cache(maxsize=POOL_SIZE)
 def getJSON(doc_id):
   url = urlJSON(doc_id)
   r = get(url, headers = {

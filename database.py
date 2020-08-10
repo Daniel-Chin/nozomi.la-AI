@@ -8,6 +8,7 @@ from nozo import getImage
 import pickle
 from tag import TagInfo
 from ai import ALL_RESPONSES
+import os.path as os_path
 
 def listAll(x):
   return os.listdir(x)
@@ -63,3 +64,6 @@ def accOverall(response):
   overall[response] += 1
   print('overall', overall)
   saveOverall(overall)
+
+def doExist(x, name):
+  return os_path.isfile(x + '/' + name)
