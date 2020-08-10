@@ -77,10 +77,10 @@ def roll():
     pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
     population = [x for x in pool if not database.doExist(database.DOCS, x)]
     while len(population) >= POOL_SIZE * (1 - VIEW_RATIO):
-      doc_id = sample(population)
+      doc_id, mode = sample(population)
       population.pop(population.index(doc_id))
       doc = Doc(getJSON(doc_id))
-      response = getResponse(doc)
+      response = getResponse(doc, mode)
       recordResponse(response, doc)
 
 def recordResponse(response, doc):
