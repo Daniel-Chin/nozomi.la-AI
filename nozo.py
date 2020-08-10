@@ -3,6 +3,7 @@ from math import floor
 from json import loads
 from functools import lru_cache
 from ai import POOL_SIZE
+from threading import Thread, Lock
 
 def askMaster(start, end):
   r = get('https://n.nozomi.la/index.nozomi', headers={
@@ -57,3 +58,19 @@ def getImage(url):
     'Connection': 'keep-alive',
   })
   return r.content
+
+class ImageWorker(Thread):
+  def __init__(self, url):
+    super().__init__()
+    self.url = url
+    self.lock = Lock()
+    self.result = None
+  
+  def start(self):
+    content = getImage(self.url)
+    with self.lock:
+      self.result = content
+  
+  def check(self):
+    with self.lock:
+      return self.result
