@@ -3,6 +3,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from nozo import ImageWorker
 from io import BytesIO
+import database
 
 TITLE = 'Nozomi.la AI'
 LOOP_INTERVAL = 100
@@ -15,13 +16,16 @@ DISPLAY = {
 }
 
 def getResponse(doc, mode):
+  # modifies doc.local_filenames if RES_SAVE. 
   result = []
   root = tk.Tk()
   root.title(TITLE)
   root.root = root
+  root.doc = doc
 
   imgWorkers = []
   imgLabels = []
+  root.imgLabels = imgLabels
   for url in doc.img_urls:
     imgWorkers.append(ImageWorker(url))
     imgLabel = tk.Label(root, text='Loading...')
@@ -67,6 +71,13 @@ def loop(root, imgWorkers, imgLabelsLeft, result):
 def onClick(event):
   button = event.widget
   button.result.append(button.response)
+  if button.response == RES_SAVE:
+    root = button.root
+    imgs = []
+    for label in root.imgLabels:
+      label.bio.seek(0)
+      imgs.append(label.bio.getbuffer())
+    database.saveImg(root.doc, imgs, root.doc.img_type)
   button.root.destroy()
 
 def onKey(event):

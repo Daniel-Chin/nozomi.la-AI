@@ -13,10 +13,14 @@ import os.path as os_path
 def listAll(x):
   return os.listdir(x)
 
-def saveImg(doc_id, imgs, img_type):
+def saveImg(doc, imgs):
+  # also writes `doc.local_filenames`
+  doc.local_filenames = []
   for i, content in enumerate(imgs):
-    with open(f'{IMGS}/{doc_id}_{i}.{img_type}', 'wb+') as f:
+    filename = f'{doc.id}_{i}.{doc.img_type}'
+    with open(f'{IMGS}/{filename}', 'wb+') as f:
       f.write(content)
+    doc.local_filenames.append(filename)
 
 def saveDoc(doc):
   with open(f'{DOCS}/{doc.id}', 'wb+') as f:

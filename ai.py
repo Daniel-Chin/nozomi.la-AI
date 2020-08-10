@@ -85,6 +85,7 @@ def roll():
 
 def recordResponse(response, doc):
   doc.response = response
+  database.saveDoc(doc)
   database.accOverall(response)
   for tag in doc.tags:
     database.accTagInfo(tag.name, response)
