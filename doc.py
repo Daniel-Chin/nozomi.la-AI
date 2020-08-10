@@ -14,6 +14,7 @@ class Doc:
   ]
 
   def __init__(self, json = None):
+    self.response = None
     self.tags = []
     self.img_urls = []
     self.local_filenames = []
@@ -40,3 +41,6 @@ class Doc:
   
   def getArtists(self):
     return [x for x in self.tags if x.type == 'artist']
+
+  def __str__(self):
+    return f"<doc {self.id} {self.response} {'saved' if self.local_filenames else ''}>"

@@ -15,3 +15,6 @@ class TagInfo:
     self.name = tag.name
     self.display = tag.display
     self.type = tag.type
+  
+  def __str__(self):
+    return f"<tag {self.name} {self.type} {self.n_responses}>"

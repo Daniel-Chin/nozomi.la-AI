@@ -1,3 +1,5 @@
+DEBUG = True
+
 EXPLORE_PROB = .1
 POOL_SIZE = 64
 VIEW_RATIO = .2
@@ -29,6 +31,7 @@ import database
 import random
 from nozo import getJSON, askMaster
 from itertools import count
+from ui import getResponse
 
 def score(n_responses):
   sum = 0
@@ -82,6 +85,7 @@ def roll():
       doc = Doc(getJSON(doc_id))
       response = getResponse(doc, mode)
       recordResponse(response, doc)
+      print(doc)
 
 def recordResponse(response, doc):
   doc.response = response
@@ -89,3 +93,5 @@ def recordResponse(response, doc):
   database.accOverall(response)
   for tag in doc.tags:
     database.accTagInfo(tag.name, response)
+    if DEBUG:
+      print(database.loadTagInfo(tag.name))
