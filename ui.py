@@ -7,6 +7,7 @@ import database
 
 TITLE = 'Nozomi.la AI'
 LOOP_INTERVAL = 100
+PADDING = 10
 
 DISPLAY = {
   RES_NEGATIVE: ('(N)egative', 'I wish to see no more of this'), 
@@ -36,6 +37,8 @@ def getResponse(doc, mode):
   root.bind('<Key>', onKey)
   root.buttons = {}
 
+  w, h = root.winfo_screenwidth(), root.winfo_screenheight()
+  root.geometry("%dx%d+0+0" % (w, h))
   root.mainloop()
   return result[0]
 
@@ -56,7 +59,7 @@ def loop(root, imgWorkers, imgLabelsLeft, result):
       label.photo = photo
   if not imgWorkers:
     frame = tk.Frame(root)
-    frame.pack()
+    frame.pack(fill=tk.X)
     for response in ALL_RESPONSES:
       button = tk.Button(frame, text=DISPLAY[response][0])
       button.response = response
@@ -65,7 +68,7 @@ def loop(root, imgWorkers, imgLabelsLeft, result):
       button.bind('<Button-1>', onClick)
       button.bind('<Return>', onClick)
       button.bind('<Key>', onKey)
-      button.pack(frame)
+      button.pack(frame, side=tk.LEFT, expand=tk.YES, padx=PADDING/2, pady=PADDING)
       root.buttons[response] = button
 
 def onClick(event):
