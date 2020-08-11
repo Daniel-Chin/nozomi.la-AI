@@ -4,6 +4,7 @@ from json import loads
 from functools import lru_cache
 from ai import POOL_SIZE, DEBUG
 from threading import Thread, Lock
+from server import g
 
 def askMaster(start, end):
   r = get('https://n.nozomi.la/index.nozomi', headers={
@@ -57,6 +58,7 @@ def getImage(url):
     'Referer': 'https://nozomi.la/',
     'Connection': 'keep-alive',
   })
+  assert r.content is not None
   return r.content
 
 class ImageWorker(Thread):
@@ -65,14 +67,15 @@ class ImageWorker(Thread):
     self.url = url
     self.lock = Lock()
     self.result = None
-    self.start()
   
   def run(self):
     if DEBUG:
       print('ImageWorker starts...')
     content = getImage(self.url)
+    g.printJobs()
     with self.lock:
       self.result = content
+    self.todo()
     if DEBUG:
       print('ImageWorker ends.')
   

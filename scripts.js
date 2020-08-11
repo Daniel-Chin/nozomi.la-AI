@@ -27,6 +27,7 @@ window.onload = () => {
     const b = document.createElement('button');
     b.innerHTML = DISPLAY[response][0];
     b.setAttribute('title', DISPLAY[response][1]);
+    b.setAttribute('accesskey', DISPLAY[response][0][1]);
     b.addEventListener('click', onClick.bind(null, response));
     buttonDiv.appendChild(b);
   }
@@ -43,11 +44,15 @@ const askNew = () => {
       imgDiv.innerHTML = '';
       const img = document.createElement('img');
       img.src = `img?doc_id=${doc_id}`;
+      img.classList.add('center-fit');
       imgDiv.appendChild(img);
-      stage = EVAL;
+      stage = EVALING;
 
-      const h2 = getElementById('h2');
+      const h2 = document.getElementById('h2');
       h2.innerHTML = `${mode} Mode`;
+      const url = `https://nozomi.la/post/${doc_id}.html`
+      const link = document.getElementById('link2nozo');
+      link.value = url;
     }
   }
   xmlHttp.open("GET", `next?rand=${Math.random()}`, true);
@@ -64,6 +69,8 @@ const onClick = (response) => {
     if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
       // console.log(xmlHttp.responseText);
       stage = WAITING;
+      const imgDiv = document.getElementById('imgdiv');
+      imgDiv.innerHTML = 'Loading...';
       askNew();
     }
   }

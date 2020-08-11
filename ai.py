@@ -1,8 +1,7 @@
-DEBUG = True
+DEBUG = False
 
-EXPLORE_PROB = .1
-# POOL_SIZE = 64
-POOL_SIZE = 8
+EXPLORE_PROB = .2
+POOL_SIZE = 64
 VIEW_RATIO = .2
 
 RES_NEGATIVE = 'RES_NEGATIVE'
@@ -29,13 +28,24 @@ WEIGHT = {
 EXPLOIT = 'EXPLOIT'
 EXPLORE = 'EXPLORE'
 
-from doc import Doc, Tag
+def recordResponse(response, doc, img):
+  doc.response = response
+  database.saveDoc(doc)
+  database.accOverall(response)
+  for tag in doc.tags:
+    database.accTagInfo(tag.name, response)
+    if DEBUG:
+      print(database.loadTagInfo(tag.name))
+  print(doc)
+  if response == RES_SAVE:
+    database.saveImg(doc, [img])
+
+from doc import Doc, Tag, DocNotSuitable
 import database
 import random
 from nozo import getJSON, askMaster, ImageWorker
 from itertools import count
 from forcemap import forceMap
-from server import g, Job
 
 def score(n_responses):
   sum = 0
@@ -79,35 +89,48 @@ def sample(population):
   else:
     # Exploit
     jsons = forceMap(getJSON, population, thread_max=8)
-    y_hats = [(x, predict(Doc(j))) for x, j in zip(population, jsons)]
+    docs = []
+    for j in jsons:
+      try:
+        docs.append(Doc(j))
+      except DocNotSuitable:
+        continue
+    y_hats = [(x.id, predict(x)) for x in docs]
     highscore = max(*[y for x, y in y_hats])
     results = [x for x, y in y_hats if y == highscore]
     return (results[0], EXPLOIT)
 
 def roll():
-  for epoch in count():
+  epoch = 0
+  epoch_step = 1
+  while True:
     print('epoch', epoch)
     pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
     population = [x for x in pool if not database.doExist(database.DOCS, x)]
+    has_stuff = False
     while len(population) >= POOL_SIZE * (1 - VIEW_RATIO):
+      has_stuff = True
       doc_id, mode = sample(population)
       population.pop(population.index(doc_id))
-      doc = Doc(getJSON(doc_id))
+      try:
+        doc = Doc(getJSON(doc_id))
+      except DocNotSuitable:
+        continue
+      if DEBUG:
+        print('Waiting for proSem...')
       g.proSem.acquire()
-      job = Job()
-      job.doc = doc
-      job.imageWorker = ImageWorker(doc.img_urls[0])
-      job.mode = mode
+      if DEBUG:
+        print('proSem acquired')
+      job = Job(doc, ImageWorker(doc.img_urls[0]), mode)
+      job.imageWorker.todo = g.conSem.release
       with g.jobsLock:
         g.jobs.append(job)
-      g.conSem.release()
+        g.printJobs()
+      job.imageWorker.start()
+    if not has_stuff:
+      epoch_step += 1
+    else:
+      epoch_step = 1
+    epoch += epoch_step
 
-def recordResponse(response, doc):
-  doc.response = response
-  database.saveDoc(doc)
-  database.accOverall(response)
-  for tag in doc.tags:
-    database.accTagInfo(tag.name, response)
-    if DEBUG:
-      print(database.loadTagInfo(tag.name))
-  print(doc)
+from server import g, Job

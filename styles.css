@@ -1,0 +1,50 @@
+button {
+  margin: 15px;
+  border-radius: 5px;
+  border: none;
+  padding: 5px 10px;
+  display: block;
+  background-color: #bbb;
+  cursor: pointer;
+  transition: .3s;
+} button:hover {
+  transform: scale(1.1);
+  background-color: #ddd;
+} button:active {
+  transform: scale(.95);
+}
+
+.container {
+  height: auto;
+  overflow: hidden;
+}
+
+.right {
+   width: 6rem;
+   float: right;
+}
+
+.left {
+   width: auto;
+   overflow: hidden;
+}
+
+#imgdiv {
+  display: grid;
+  height: 100%;
+  width: 100%;
+}
+
+.center-fit {
+  max-width: 100%;
+  max-height: 100vh;
+  margin: auto;
+}
+
+input {
+  width: 100%;
+}
+
+h2 {
+  font-size: large;
+}

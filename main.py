@@ -1,12 +1,14 @@
 import os
-from ai import roll
+from ai import roll, DEBUG
 from server import startServer, PORT
 import webbrowser
+import myhttp
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
-
 startServer()
-webbrowser.open(f'http://localhost:{PORT}')
+if not DEBUG:
+  myhttp.myLogger.verbose = False
+  webbrowser.open(f'http://localhost:{PORT}')
 roll()

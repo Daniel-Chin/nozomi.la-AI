@@ -10,7 +10,9 @@ import logging
 from mythread import Safe
 
 __all__ = ['BadRequest', 'ClientShutdown', 'Request', 
-           'OneServer', 'Server', 'Intent', 'log', 'logging', 'respond']
+           'OneServer', 'Server', 'Intent', 'log', 'logging', 
+           'respond', 'myLogger',
+]
 
 class BadRequest(BaseException):
     pass
@@ -22,10 +24,18 @@ logging.basicConfig(format='%(asctime)s %(message)s',
                     filename = 'log.log')
 logging.root.setLevel(logging.NOTSET)
 
-def log(*args, sep = ' ', end = '\n', flush = False, level = logging.INFO):
-    text = sep.join([str(x) for x in args]) + end
-    print(text, flush = flush, end = '')
-    logging.log(level, text)
+class MyLogger:
+    def __init__(self):
+        self.verbose = True
+    
+    def log(self, *args, sep = ' ', end = '\n', flush = False, level = logging.INFO):
+        text = sep.join([str(x) for x in args]) + end
+        if self.verbose:
+            print(text, flush = flush, end = '')
+        logging.log(level, text)
+
+myLogger = MyLogger()
+log = myLogger.log
 
 class Intent:
     pass
