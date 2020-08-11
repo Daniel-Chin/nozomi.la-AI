@@ -7,14 +7,16 @@ VIEW_RATIO = .2
 
 RES_NEGATIVE = 'RES_NEGATIVE'
 RES_FINE = 'RES_FINE'
+RES_BETTER = 'RES_BETTER'
 RES_WOW = 'RES_WOW'
 RES_SAVE = 'RES_SAVE'
 
-ALL_RESPONSES = [RES_NEGATIVE, RES_FINE, RES_WOW, RES_SAVE]
+ALL_RESPONSES = [RES_NEGATIVE, RES_FINE, RES_BETTER, RES_WOW, RES_SAVE]
 
 SCORE = {
   RES_NEGATIVE: -1,
   RES_FINE: 0,
+  RES_BETTER: .5,
   RES_WOW: 2,
   RES_SAVE: 10,
 }
@@ -33,6 +35,7 @@ import random
 from nozo import getJSON, askMaster
 from itertools import count
 from ui import getResponse
+from forcemap import forceMap
 
 def score(n_responses):
   sum = 0
@@ -75,7 +78,8 @@ def sample(population):
     return (doc_id, EXPLORE)
   else:
     # Exploit
-    y_hats = [(x, predict(Doc(getJSON(x)))) for x in population]
+    jsons = forceMap(getJSON, population, thread_max=8)
+    y_hats = [(x, predict(Doc(j))) for x, j in zip(population, jsons)]
     highscore = max(*[y for x, y in y_hats])
     results = [x for x, y in y_hats if y == highscore]
     return (results[0], EXPLOIT)
