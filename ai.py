@@ -32,10 +32,10 @@ EXPLORE = 'EXPLORE'
 from doc import Doc, Tag
 import database
 import random
-from nozo import getJSON, askMaster
+from nozo import getJSON, askMaster, ImageWorker
 from itertools import count
-from ui import getResponse
 from forcemap import forceMap
+from server import g, Job
 
 def score(n_responses):
   sum = 0
@@ -93,9 +93,14 @@ def roll():
       doc_id, mode = sample(population)
       population.pop(population.index(doc_id))
       doc = Doc(getJSON(doc_id))
-      response = getResponse(doc, mode)
-      recordResponse(response, doc)
-      print(doc)
+      g.proSem.acquire()
+      job = Job()
+      job.doc = doc
+      job.imageWorker = ImageWorker(doc.img_urls[0])
+      job.mode = mode
+      with g.jobsLock:
+        g.jobs.append(job)
+      g.conSem.release()
 
 def recordResponse(response, doc):
   doc.response = response
@@ -105,3 +110,4 @@ def recordResponse(response, doc):
     database.accTagInfo(tag.name, response)
     if DEBUG:
       print(database.loadTagInfo(tag.name))
+  print(doc)

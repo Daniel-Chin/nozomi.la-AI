@@ -9,6 +9,10 @@ import pickle
 from tag import TagInfo
 from ai import ALL_RESPONSES
 import os.path as os_path
+from threading import Lock
+
+fileLock = Lock()
+accLock = Lock()
 
 def listAll(x):
   return os.listdir(x)
@@ -34,21 +38,24 @@ def legalizeTagName(name):
   return ''.join(x if x.isalnum() else '_' for x in name)
 
 def loadTagInfo(name):
-  with open(f'{TAGS}/{legalizeTagName(name)}', 'rb') as f:
-    return pickle.load(f)
+  with fileLock:
+    with open(f'{TAGS}/{legalizeTagName(name)}', 'rb') as f:
+      return pickle.load(f)
 
 def saveTagInfo(tagInfo):
-  if tagInfo.name == 'artist':
-    print("saveTagInfo: tagInfo.name == 'artist'")
-    from console import console
-    console({**locals(), **globals()})
-  with open(f'{TAGS}/{legalizeTagName(tagInfo.name)}', 'wb+') as f:
-    pickle.dump(tagInfo, f)
+  with fileLock:
+    if tagInfo.name == 'artist':
+      print("saveTagInfo: tagInfo.name == 'artist'")
+      from console import console
+      console({**locals(), **globals()})
+    with open(f'{TAGS}/{legalizeTagName(tagInfo.name)}', 'wb+') as f:
+      pickle.dump(tagInfo, f)
 
 def accTagInfo(name, response):
-  tagInfo = loadTagInfo(name)
-  tagInfo.n_responses[response] += 1
-  saveTagInfo(tagInfo)
+  with accLock:
+    tagInfo = loadTagInfo(name)
+    tagInfo.n_responses[response] += 1
+    saveTagInfo(tagInfo)
 
 def saveNewTagInfo(tag):
   tagInfo = TagInfo()
