@@ -30,12 +30,19 @@ def loadDoc(doc_id):
   with open(f'{DOCS}/{doc_id}', 'rb') as f:
     return pickle.load(f)
 
+def legalizeTagName(name):
+  return ''.join(x if x.isalnum() else '_' for x in name)
+
 def loadTagInfo(name):
-  with open(f'{TAGS}/{name}', 'rb') as f:
+  with open(f'{TAGS}/{legalizeTagName(name)}', 'rb') as f:
     return pickle.load(f)
 
 def saveTagInfo(tagInfo):
-  with open(f'{TAGS}/{tagInfo.name}', 'wb+') as f:
+  if tagInfo.name == 'artist':
+    print("saveTagInfo: tagInfo.name == 'artist'")
+    from console import console
+    console({**locals(), **globals()})
+  with open(f'{TAGS}/{legalizeTagName(tagInfo.name)}', 'wb+') as f:
     pickle.dump(tagInfo, f)
 
 def accTagInfo(name, response):
