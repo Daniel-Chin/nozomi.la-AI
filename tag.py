@@ -18,3 +18,6 @@ class TagInfo:
   
   def __str__(self):
     return f"<tag {self.name} {self.type} {self.n_responses}>"
+  
+  def sum(self):
+    return sum([self.n_responses[x] for x in ALL_RESPONSES])

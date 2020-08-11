@@ -78,6 +78,9 @@ def predict(doc: Doc):
       goodness = 0
     else:
       goodness *= WEIGHT.get(tag.type, 1)
+      _sum = tagInfo.sum()
+      if _sum < 5:
+        goodness *= _sum / 5
     result += goodness
   if DEBUG:
     print('predict', doc.id, result)
