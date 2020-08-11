@@ -1,4 +1,4 @@
-from ai import ALL_RESPONSES, RES_NEGATIVE, RES_FINE, RES_WOW, RES_SAVE, DEBUG
+from ai import ALL_RESPONSES, RES_NEGATIVE, RES_FINE, RES_BETTER, RES_WOW, RES_SAVE, DEBUG
 import tkinter as tk
 from PIL import Image, ImageTk
 from nozo import ImageWorker
@@ -8,10 +8,12 @@ import database
 TITLE = 'Nozomi.la AI'
 LOOP_INTERVAL = 100
 PADDING = 5
+RIGHT_FRAME_WIDTH = 150
 
 DISPLAY = {
   RES_NEGATIVE: ('(N)egative', 'I wish to see no more of this'), 
   RES_FINE: ('(O)k', 'I feel neutral'), 
+  RES_BETTER: ('(H)as Value', 'I can enjoy it'),
   RES_WOW: ('(G)ood', 'One of the rare good ones'), 
   RES_SAVE: ('(S)tar', 'Super good. Save to disk'), 
 }
@@ -25,11 +27,12 @@ def getResponse(doc, mode):
   root.doc = doc
   w, h = root.winfo_screenwidth(), root.winfo_screenheight()
   root.geometry("%dx%d+0+0" % (w, h))
+  print('UI doc', doc.id)
 
   tk.Label(root, text=f'{mode} Mode').pack()
 
   resize_h = h / (doc.height * len(doc.img_urls))
-  resize_w = w / doc.width
+  resize_w = (w - RIGHT_FRAME_WIDTH) / doc.width
   if resize_h > resize_w:
     resize = resize_w
   else:
@@ -55,13 +58,13 @@ def getResponse(doc, mode):
     imgLabel.pack()
     imgLabels.append(imgLabel)
   
+  root.bind('<Key>', onKey)
+  root.buttons = {}
+
   root.after(
     LOOP_INTERVAL, loop, root, imgWorkers, 
     imgLabels.copy(), result, resize_wh, 
   )
-  root.bind('<Key>', onKey)
-  root.buttons = {}
-
   root.mainloop()
   return result[0]
 
@@ -115,6 +118,7 @@ def onKey(event):
     response = {
       'N': RES_NEGATIVE, 
       'O': RES_FINE, 
+      'H': RES_BETTER, 
       'G': RES_WOW, 
       'S': RES_SAVE, 
     }[char]
