@@ -29,11 +29,13 @@ EXPLOIT = 'EXPLOIT'
 EXPLORE = 'EXPLORE'
 
 def recordResponse(response, doc, img):
+  if database.doExist(database.DOCS, doc.id):
+    raise Exception('Error 2049284234')
   doc.response = response
   database.saveDoc(doc)
   database.accOverall(response)
   for tag in doc.tags:
-    database.accTagInfo(tag.name, response)
+    database.accTagInfo(tag, response)
     if DEBUG:
       print(database.loadTagInfo(tag.name))
   print(doc)
@@ -103,34 +105,48 @@ def sample(population):
 def roll():
   epoch = 0
   epoch_step = 1
+  patient = 1
+  traversed = {}
   while True:
-    print('epoch', epoch)
-    pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
-    population = [x for x in pool if not database.doExist(database.DOCS, x)]
     has_stuff = False
-    while len(population) >= POOL_SIZE * (1 - VIEW_RATIO):
-      has_stuff = True
-      doc_id, mode = sample(population)
-      population.pop(population.index(doc_id))
-      try:
-        doc = Doc(getJSON(doc_id))
-      except DocNotSuitable:
-        continue
-      if DEBUG:
-        print('Waiting for proSem...')
-      g.proSem.acquire()
-      if DEBUG:
-        print('proSem acquired')
-      job = Job(doc, ImageWorker(doc.img_urls[0]), mode)
-      job.imageWorker.todo = g.conSem.release
-      with g.jobsLock:
-        g.jobs.append(job)
-        g.printJobs()
-      job.imageWorker.start()
-    if not has_stuff:
-      epoch_step += 1
+    if not traversed.get(epoch, False):
+      print('epoch', epoch)
+      traversed[epoch] = True
+      pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
+      population = [x for x in pool if not database.doExist(database.DOCS, x)]
+      while len(population) >= POOL_SIZE * (1 - VIEW_RATIO):
+        has_stuff = True
+        doc_id, mode = sample(population)
+        population.pop(population.index(doc_id))
+        try:
+          doc = Doc(getJSON(doc_id))
+        except DocNotSuitable:
+          continue
+        if DEBUG:
+          print('Waiting for proSem...')
+        g.proSem.acquire()
+        if DEBUG:
+          print('proSem acquired')
+        job = Job(doc, ImageWorker(doc.img_urls[0]), mode)
+        job.imageWorker.todo = g.conSem.release
+        with g.jobsLock:
+          g.jobs.append(job)
+          g.printJobs()
+        job.imageWorker.start()
+    if has_stuff:
+      patient = 1
+      if epoch_step != 1:
+        epoch -= epoch_step - 1
+        epoch_step = 1
+      else:
+        epoch_step += 1
     else:
-      epoch_step = 1
-    epoch += epoch_step
+      if patient == 1:
+        patient = 0
+      else:
+        epoch_step *= 2
+        if random.random() < .3:
+          epoch -= random.randint(0, epoch_step)
+      epoch += epoch_step
 
 from server import g, Job

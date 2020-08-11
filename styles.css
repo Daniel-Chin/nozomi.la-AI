@@ -47,4 +47,7 @@ input {
 
 h2 {
   font-size: large;
+  text-align: center;
+  padding: 5px;
+  background-color: cyab;
 }

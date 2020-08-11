@@ -1,3 +1,6 @@
+const EXPLOIT = 'EXPLOIT';
+const EXPLORE = 'EXPLORE';
+
 const RES_NEGATIVE = 'RES_NEGATIVE';
 const RES_FINE = 'RES_FINE';
 const RES_BETTER = 'RES_BETTER';
@@ -37,7 +40,7 @@ window.onload = () => {
 const askNew = () => {
   const xmlHttp = new XMLHttpRequest();
   xmlHttp.onreadystatechange = () => {
-    if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
       const { doc_id, mode } = JSON.parse(xmlHttp.responseText);
       globalObj.doc_id = doc_id;
       const imgDiv = document.getElementById('imgdiv');
@@ -49,7 +52,12 @@ const askNew = () => {
       stage = EVALING;
 
       const h2 = document.getElementById('h2');
-      h2.innerHTML = `${mode} Mode`;
+      if (mode === EXPLOIT) {
+        h2.innerHTML = '';
+      } else {
+        h2.innerHTML = `${mode} Mode`;
+        h2.title = 'This image is randomly sampled';
+      }
       const url = `https://nozomi.la/post/${doc_id}.html`
       const link = document.getElementById('link2nozo');
       link.value = url;
@@ -66,7 +74,7 @@ const onClick = (response) => {
   }
   const xmlHttp = new XMLHttpRequest();
   xmlHttp.onreadystatechange = () => {
-    if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
       // console.log(xmlHttp.responseText);
       stage = WAITING;
       const imgDiv = document.getElementById('imgdiv');

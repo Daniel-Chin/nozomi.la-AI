@@ -1,3 +1,5 @@
+# todo: also filter for occurance
+
 from ai import score
 from database import listAll, loadTagInfo, TAGS, loadOverall
 

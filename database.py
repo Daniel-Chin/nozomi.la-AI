@@ -35,7 +35,13 @@ def loadDoc(doc_id):
     return pickle.load(f)
 
 def legalizeTagName(name):
-  return ''.join(x if x.isalnum() else '_' for x in name)
+  result = ''
+  for char in name:
+    if char.isalnum() or char == '_':
+      result += char
+    else:
+      result += f'chr({ord(char)})'
+  return result
 
 def loadTagInfo(name):
   with fileLock:
@@ -51,9 +57,13 @@ def saveTagInfo(tagInfo):
     with open(f'{TAGS}/{legalizeTagName(tagInfo.name)}', 'wb+') as f:
       pickle.dump(tagInfo, f)
 
-def accTagInfo(name, response):
+def accTagInfo(tag, response):
   with accLock:
-    tagInfo = loadTagInfo(name)
+    try:
+      tagInfo = loadTagInfo(tag.name)
+    except FileNotFoundError:
+      saveNewTagInfo(tag)
+      tagInfo = loadTagInfo(tag.name)
     tagInfo.n_responses[response] += 1
     saveTagInfo(tagInfo)
 
