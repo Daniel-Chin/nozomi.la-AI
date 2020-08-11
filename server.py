@@ -51,6 +51,7 @@ class MyOneServer(OneServer):
         g.jobs.pop(i)
       g.proSem.release()
       recordResponse(response, doc)
+      respond(self.socket, b'ok')
     elif request.target.split('?')[0] == '/img':
       param = request.target.split('?')[1]
       doc_id = param.lstrip('doc_id=')
