@@ -7,7 +7,7 @@ import os
 from nozo import getImage
 import pickle
 from tag import TagInfo
-from ai import ALL_RESPONSES
+from ai import ALL_RESPONSES, DEBUG
 import os.path as os_path
 from threading import Lock
 
@@ -90,8 +90,9 @@ def saveOverall(overall):
 def accOverall(response):
   overall = loadOverall()
   overall[response] += 1
-  print('overall', overall)
   saveOverall(overall)
+  if DEBUG:
+    print('overall', overall)
 
 def doExist(x, name):
   return os_path.isfile(x + '/' + name)
