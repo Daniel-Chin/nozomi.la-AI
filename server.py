@@ -1,9 +1,12 @@
 JOB_POOL_SIZE = 4
+PORT = 2348
 
-from threading import Semaphore, Lock
+from threading import Semaphore, Lock, Thread
 from myhttp import Server, OneServer, respond
 import json
 from ai import ALL_RESPONSES
+
+trusted_ip = []
 
 class G:
   def __init__(self):
@@ -60,3 +63,16 @@ class MyOneServer(OneServer):
       pass
     else:
       print('Unknown request:', request.target)
+
+class MyServer(Server):
+  def onConnect(self, addr):
+    global trusted_ip
+    if not trusted_ip:
+      trusted_ip = addr[0]
+    elif addr[0] != trusted_ip:
+      print('SOMEONE IS ATTACKING!', addr)
+      self.close()
+
+def startServer():
+  server = MyServer(MyOneServer, PORT)
+  server.start()
