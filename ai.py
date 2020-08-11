@@ -16,7 +16,7 @@ SCORE = {
   RES_NEGATIVE: -1,
   RES_FINE: 0,
   RES_BETTER: .5,
-  RES_WOW: 2,
+  RES_WOW: 4,
   RES_SAVE: 10,
 }
 

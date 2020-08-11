@@ -41,13 +41,14 @@ button {
   margin: auto;
 }
 
-input {
+textarea {
   width: 100%;
+  height: 4rem;
 }
 
 h2 {
   font-size: large;
   text-align: center;
   padding: 5px;
-  background-color: cyab;
+  background-color: cyan;
 }
