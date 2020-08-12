@@ -34,9 +34,9 @@ def main():
   print('Sorting...')
   tagInfos.sort(key=lambda x: x[1])
   print()
-  table = []
+  table = [['Score', 'Type', 'Display', 'Name']]
   for ti, s in tagInfos:
-    table.append([format(s, '+.1f'), str(ti.type), ti.display])
+    table.append([format(s, '+.1f'), str(ti.type), ti.display, ti.name])
   printTable(table)
 
 main()

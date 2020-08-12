@@ -63,6 +63,15 @@
   JOB_POOL_SIZE 是本地预抓取的池子大小。如果图片加载慢，尝试上调这一参数。如果Nozomi.la开始拒绝连接请求，说明我们并发请求太多了，试着下调这一参数。
 </p>
 <p>
+  Blacklist <br />
+  Add tag names to `blacklist.txt` to achieve force exclusion. They won't even show up in EXPLORE mode. <br />
+  The tag names must be the index names of the tags, not the display names. Run summarizeTags.py to see the index names. <br />
+  Warning: If a document is not well-tagged, it may not be excluded. <br />
+  在 `blacklist.txt` 中加入tag名，它们不会再出现，甚至 EXPLORE Mode 也不会。<br />
+  Tag名 必须是索引名，不能是显示名。运行 summarizeTags.py 来看索引名。<br />
+  然而，如果有一个作品它的 tag 不全，则可能成为漏网之鱼。
+</p>
+<p>
   如有建议，或者 bug反馈，请在 https://github.com/daniel-chin/nozomi.la-ai 进行 open issue。谢谢！
 </p>
 <a href='/'>Start</a>

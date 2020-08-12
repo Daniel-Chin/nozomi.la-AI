@@ -28,6 +28,8 @@ WEIGHT = {
 EXPLOIT = 'EXPLOIT'
 EXPLORE = 'EXPLORE'
 
+blacklist = []
+
 def recordResponse(response, doc, img):
   if database.doExist(database.DOCS, doc.id):
     raise Exception('Error 2049284234')
@@ -106,6 +108,8 @@ def sample(population):
     return (results[0], EXPLOIT)
 
 def roll():
+  print('blacklist is', blacklist)
+  print('If at least one of them show up in a doc, the doc will not show up, not even in EXPLORE mode.')
   epoch = 0
   epoch_step = 1
   patient = 1
@@ -117,13 +121,15 @@ def roll():
       traversed[epoch] = True
       pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
       population = [x for x in pool if not database.doExist(database.DOCS, x)]
-      while len(population) >= POOL_SIZE * (1 - VIEW_RATIO):
+      while len(population) >= len(pool) * (1 - VIEW_RATIO):
         has_stuff = True
         doc_id, mode = sample(population)
         population.pop(population.index(doc_id))
         try:
           doc = Doc(getJSON(doc_id))
         except DocNotSuitable:
+          continue
+        if isBlacklisted(doc):
           continue
         if DEBUG:
           print('Waiting for proSem...')
@@ -151,5 +157,19 @@ def roll():
         if random.random() < .3:
           epoch -= random.randint(0, epoch_step)
       epoch += epoch_step
+
+def setBlackList(bl):
+  blacklist.clear()
+  blacklist.extend(bl)
+
+def isBlacklisted(doc):
+  try:
+    for tag in doc.tags:
+      if tag.name in blacklist:
+        print(doc.id, 'is blacklisted for having', tag.name)
+        return True
+  except DocNotSuitable:
+    pass
+  return False
 
 from server import g, Job
