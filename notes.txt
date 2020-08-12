@@ -1,3 +1,2 @@
 2do
   view Goods
-  Blacklist tags: not even in explore mode
