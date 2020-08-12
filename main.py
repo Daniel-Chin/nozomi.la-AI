@@ -9,6 +9,7 @@ def main():
   abspath = os.path.abspath(__file__)
   dname = os.path.dirname(abspath)
   os.chdir(dname)
+  database.init()
   parseBlacklist()
   if not DEBUG:
     myhttp.myLogger.verbose = False

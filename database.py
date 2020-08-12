@@ -96,3 +96,8 @@ def accOverall(response):
 
 def doExist(x, name):
   return os_path.isfile(x + '/' + name)
+
+def init():
+  for i in [DOCS, TAGS, IMGS]:
+    if not os_path.isdir(i):
+      os.mkdir(i)
