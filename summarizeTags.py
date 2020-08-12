@@ -36,7 +36,7 @@ def main():
   print()
   table = []
   for ti, s in tagInfos:
-    table.append([format(s, '+.1f'), ti.type, ti.display])
+    table.append([format(s, '+.1f'), str(ti.type), ti.display])
   printTable(table)
 
 main()

@@ -7,8 +7,8 @@ import myhttp
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
-startServer()
 if not DEBUG:
   myhttp.myLogger.verbose = False
-  webbrowser.open(f'http://localhost:{PORT}')
+  webbrowser.open(f'http://localhost:{PORT}/welcome.html')
+startServer()
 roll()

@@ -32,7 +32,7 @@ class MyOneServer(OneServer):
     if request.target == '/':
       with open('index.html', 'rb') as f:
         respond(self.socket, f.read())
-    elif request.target in ['/styles.css', '/scripts.js']:
+    elif request.target in ['/styles.css', '/scripts.js', '/welcome.html']:
       with open(request.target.lstrip('/'), 'rb') as f:
         respond(self.socket, f.read())
     elif request.target == '/':
@@ -89,5 +89,5 @@ class MyServer(Server):
       self.close()
 
 def startServer():
-  server = MyServer(MyOneServer, PORT)
+  server = MyServer(MyOneServer, PORT, name='localhost')
   server.start()

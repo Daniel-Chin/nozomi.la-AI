@@ -1,0 +1,70 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nozomi.la AI</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src='scripts.js'></script>
+</head>
+<body id='bodypad'>
+<h1>
+  Nozomi.la AI
+</h1>
+<p>
+  内测版本，请勿外传。(还没有加18岁判定器，不负责任。)
+</p>
+<p>
+  The author is not affiliated to Nozomi.la. This is a third-party tool. <br />
+  作者与Nozomi.la没有从属关系。本工具是第三方工具。<br />
+  The author failed to contact Nozomi.la. If nozomi.la wants to contact the author, feel free to reach me on Github. 
+</p>
+<p>
+  Nozomi.la has netizen-created content. What you see in this tool does not represent the author's point of view. <br />
+  Nozomi.la 包含网民创作的内容，不代表本工具作者观点。<br />
+  Please be advised that errotic contents may show up. You can teach the AI to avoid errotic contents, but I cannot guarantee anything. <br />
+  请注意，具有性意味的内容可能会出现。你可以让AI避开这些内容，但我不保证你会一次也不看见。
+</p>
+<p>
+  This tool can help you find works that you like. <br />
+  This tool also allows you to better understand your own preferences. Run summarizeTags.py to generate the report. You will be surprised.<br />
+  本工具可以助你搜集喜欢的作品，也可助你更好地理解自己的口味。时不时运行 summarizeTags.py 来查看自己的偏好，你可能会惊讶。
+</p>
+<p>
+  Explore mode VS Exploit mode <br />
+  In Exploit mode, you see works that the AI predicts you will like. <br />
+  In EXPLORE Mode, the AI shows you random documents. <br />
+  EXPLORE Mode is important to avoid modality collapse. <br />
+  在 EXPLORE Mode，AI 假装不知道你的偏好，随机展示作品。<br />
+  这很重要。如果没有 EXPLORE Mode，你会局限在单种风格里，恶性循环，与更多你喜欢的风格失之交臂。
+</p>
+<p>
+  Negative: 我不想看到更多这类作品 <br />
+  Ok: 一般般 <br />
+  Has value: 有可取之处 <br />
+  Good: 我若错过会觉得可惜 <br />
+  Star: 存了 <br />
+  You can hold alt + hotkey to select a button. <br />
+  按住 Alt 按首字母可以选择按钮。
+</p>
+<p>
+  Parameters <br />
+  Use notepad.exe to open files and change the parameters at the top. <br />
+  In file `ai.py`: <br />
+  EXPLORE_PROB is the probability of entering EXPLORE Mode.<br />
+  VIEW_RATIO determines the top percentile that the AI will show you. For example, ".2" means in each batch of documents the AI will only show you the top 20% that are predicted to be good. <br />
+  In file `server.py`: <br />
+  JOB_POOL_SIZE is the size of the local pre-fetch cache. If the images load too slowly, try increasing this parameter. If Nozomi.la starts to refuse your connections, try lowering this parameter. <br />
+  调参 <br />
+  使用记事本打开文件，更改顶部的参数。<br />
+  在文件`ai.py`中：<br />
+  EXPLORE_PROB 是 EXPLORE Mode 的出现频率。<br />
+  VIEW_RATIO 决定推荐的精品程度。比如，".2"就会让AI只给你推荐每一批作品中预测你会最喜欢的20%。<br />
+  在文件`server.py`中：<br />
+  JOB_POOL_SIZE 是本地预抓取的池子大小。如果图片加载慢，尝试上调这一参数。如果Nozomi.la开始拒绝连接请求，说明我们并发请求太多了，试着下调这一参数。
+</p>
+<p>
+  如有建议，或者 bug反馈，请在 https://github.com/daniel-chin/nozomi.la-ai 进行 open issue。谢谢！
+</p>
+<a href='/'>Start</a>
+</body>
+</html>

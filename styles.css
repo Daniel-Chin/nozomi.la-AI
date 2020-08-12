@@ -52,3 +52,7 @@ h2 {
   padding: 5px;
   background-color: cyan;
 }
+
+#bodypad {
+  padding: 15px;
+}
