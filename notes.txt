@@ -1,2 +1,1 @@
 2do
-  view Goods
