@@ -1,0 +1,8 @@
+__pycache__/
+docs/
+imgs/
+tags/
+overall.pickle
+log.log
+blacklist.txt
+*.zip

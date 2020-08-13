@@ -35,4 +35,5 @@ def parseBlacklist():
       f.write('\n')
   setBlackList(blacklist)
 
-main()
+if __name__ == '__main__':
+    main()
