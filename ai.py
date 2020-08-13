@@ -3,6 +3,7 @@ DEBUG = False
 EXPLORE_PROB = .2
 POOL_SIZE = 256
 VIEW_RATIO = .15
+ATTITUDE_TOWARDS_NOVEL_TAGS = 1
 
 RES_NEGATIVE = 'RES_NEGATIVE'
 RES_FINE = 'RES_FINE'
@@ -55,6 +56,8 @@ def score(n_responses):
   sum = 0
   for response in ALL_RESPONSES:
     sum += n_responses[response]
+  if sum < .5:  # round(sum) == 0
+    return ATTITUDE_TOWARDS_NOVEL_TAGS
   score = 0
   for response in ALL_RESPONSES:
     score += n_responses[response] / sum * SCORE[response]

@@ -52,6 +52,7 @@
   In file `ai.py`: <br />
   EXPLORE_PROB is the probability of entering EXPLORE Mode.<br />
   VIEW_RATIO determines the top percentile that the AI will show you. For example, ".2" means in each batch of documents the AI will only show you the top 20% that are predicted to be good. <br />
+  ATTITUDE_TOWARDS_NOVEL_TAGS. If &gt;0, tags that are never shown before will be welcome. If =0, ai will use a balanced statictic model.<br />
   In file `server.py`: <br />
   JOB_POOL_SIZE is the size of the local pre-fetch cache. If the images load too slowly, try increasing this parameter. If Nozomi.la starts to refuse your connections, try lowering this parameter. <br />
   调参 <br />
@@ -59,6 +60,7 @@
   在文件`ai.py`中：<br />
   EXPLORE_PROB 是 EXPLORE Mode 的出现频率。<br />
   VIEW_RATIO 决定推荐的精品程度。比如，".2"就会让AI只给你推荐每一批作品中预测你会最喜欢的20%。<br />
+  ATTITUDE_TOWARDS_NOVEL_TAGS. 如果 &gt;0, 从未见过的 tags 将会人为增加推荐概率；如果 =0，ai 会以以往tags的平均分数评估新tags。<br />
   在文件`server.py`中：<br />
   JOB_POOL_SIZE 是本地预抓取的池子大小。如果图片加载慢，尝试上调这一参数。如果Nozomi.la开始拒绝连接请求，说明我们并发请求太多了，试着下调这一参数。
 </p>
