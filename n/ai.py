@@ -93,7 +93,7 @@ def sample(population):
     return (doc_id, EXPLORE)
   else:
     # Exploit
-    jsons = forceMap(getJSON, population, thread_max=JSON_MAX)
+    jsons = [getJSON(x) for x in population]
     docs = []
     for j in jsons:
       try:
@@ -119,7 +119,13 @@ def roll():
       traversed[epoch] = True
       pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
       population = [x for x in pool if not database.doExist(database.DOCS, x)]
+      checked_404 = False
       while len(population) >= len(pool) * (1 - VIEW_RATIO):
+        if not checked_404:
+          jsons = forceMap(getJSON, population, thread_max=JSON_MAX)
+          population = [x for x, y in zip(population, jsons) if y is not None]
+          checked_404 = True
+          continue
         has_stuff = True
         doc_id, mode = sample(population)
         population.pop(population.index(doc_id))

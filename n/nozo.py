@@ -7,6 +7,7 @@ if FILTER:
 from requests import get
 from math import floor
 from json import loads
+from json.decoder import JSONDecodeError
 from functools import lru_cache
 from ai import POOL_SIZE, DEBUG
 from threading import Thread, Lock
@@ -52,12 +53,15 @@ def getJSON(doc_id):
     'Connection': 'keep-alive',
     'TE': 'Trailers',
   })
+  if '404 Not Found' in r.text:
+    print(f'{doc_id} has 404 not found')
+    return None
   try:
     return loads(r.text)
-  except:
+  except JSONDecodeError as e:
     print('json not formatted.')
     print(r.text)
-    input('Enter to quit...')
+    raise e
 
 def getImage(url):
   r = get(url, headers = {
