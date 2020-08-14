@@ -20,7 +20,7 @@ def main():
 def parseBlacklist():
   blacklist = []
   try:
-    with open('blacklist.txt', 'r') as f:
+    with open('blacklist.txt', 'r', encoding='utf-8') as f:
       for line in f:
         line = line.strip()
         if line:
