@@ -1,3 +1,9 @@
+MASTER_URL = 'https://n.nozomi.la/index.nozomi'
+TAG_URL = 'https://n.nozomi.la/nozomi/%s.nozomi'
+
+from parameters import FILTER
+if FILTER:
+  MASTER_URL = TAG_URL % FILTER
 from requests import get
 from math import floor
 from json import loads
@@ -7,7 +13,7 @@ from threading import Thread, Lock
 from server import g
 
 def askMaster(start, end):
-  r = get('https://n.nozomi.la/index.nozomi', headers={
+  r = get(MASTER_URL, headers={
     'Host': 'n.nozomi.la',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
     'Accept': '*/*',
@@ -46,7 +52,12 @@ def getJSON(doc_id):
     'Connection': 'keep-alive',
     'TE': 'Trailers',
   })
-  return loads(r.text)
+  try:
+    return loads(r.text)
+  except:
+    print('json not formatted.')
+    print(r.text)
+    input('Enter to quit...')
 
 def getImage(url):
   r = get(url, headers = {

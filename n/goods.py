@@ -20,32 +20,28 @@ def main():
         saves.append(doc)
       elif doc.response == RES_WOW:
         wows.append(doc)
-  if all_imgs != saves:
-    lacks = set([x.id for x in saves]) - set(all_imgs)
+  lacks = set([x.id for x in saves]) - set(all_imgs)
+  if lacks:
     print('Document response is SAVE but image not on disk:')
     [print(x) for x in lacks]
-  print('Download now?')
-  if input('y/n ').lower() == 'y':
-    for id in lacks:
-      doc = [x for x in saves if x.id == id][0]
-      print('Getting', doc.id, '...')
-      imgs = [getImage(x) for x in doc.img_urls]
-      saveImg(doc, imgs)
-    print('Complete.')
-  print('All wow ones:')
-  [print(x.id) for x in wows]
+    print('Download now?')
+    if input('y/n ').lower() == 'y':
+      for id in lacks:
+        doc = [x for x in saves if x.id == id][0]
+        print('Getting', doc.id, '...')
+        imgs = [getImage(x) for x in doc.img_urls]
+        saveImg(doc, imgs)
+      print('Complete.')
   p = input('Input path to download to: ')
-  with Jdt(len(wows)) as j:
-    for doc in wows:
+  fns = [osp.join(p, doc.id) + '.' + doc.img_type for doc in wows]
+  missing_fns = [x for x in fns if not osp.exists(x)]
+  print(f'There are {len(fns)} wow ones. {len(missing_fns)} are not on disk.')
+  with Jdt(len(missing_fns)) as j:
+    for fn in missing_fns:
       j.acc()
-      fn = osp.join(p, doc.id)
-      if osp.exists(fn):
-        print()
-        print('Skipping', doc.id, '. Already exists. ')
-      else:
-        img = getImage(doc.img_urls[0])
-        with open(fn + '.' + doc.img_type, 'wb+') as f:
-          f.write(img)
-    input('Ok. Press enter to quit...')
+      img = getImage(doc.img_urls[0])
+      with open(fn, 'wb+') as f:
+        f.write(img)
+  input('Ok. Press enter to quit...')
 
 main()

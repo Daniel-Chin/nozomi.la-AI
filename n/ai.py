@@ -1,9 +1,4 @@
-DEBUG = False
-
-EXPLORE_PROB = .1
-POOL_SIZE = 64
-VIEW_RATIO = .15
-ATTITUDE_TOWARDS_NOVEL_TAGS = 1
+from parameters import DEBUG, START_EPOCH, EXPLORE_PROB, POOL_SIZE, JSON_MAX, VIEW_RATIO, ATTITUDE_TOWARDS_NOVEL_TAGS
 
 RES_NEGATIVE = 'RES_NEGATIVE'
 RES_FINE = 'RES_FINE'
@@ -98,7 +93,7 @@ def sample(population):
     return (doc_id, EXPLORE)
   else:
     # Exploit
-    jsons = forceMap(getJSON, population, thread_max=8)
+    jsons = forceMap(getJSON, population, thread_max=JSON_MAX)
     docs = []
     for j in jsons:
       try:
@@ -113,7 +108,7 @@ def sample(population):
 def roll():
   print('blacklist is', blacklist)
   print('If at least one of them show up in a doc, the doc will not show up, not even in EXPLORE mode.')
-  epoch = 0
+  epoch = START_EPOCH
   epoch_step = 1
   patient = 1
   traversed = {}

@@ -1,6 +1,7 @@
 import os
-from ai import roll, DEBUG, setBlackList
-from server import startServer, PORT
+from parameters import DEBUG, PORT
+from ai import roll, setBlackList
+from server import startServer
 import webbrowser
 import myhttp
 import database
@@ -14,8 +15,12 @@ def main():
   if not DEBUG:
     myhttp.myLogger.verbose = False
     webbrowser.open(f'http://localhost:{PORT}/welcome.html')
-  startServer()
-  roll()
+  server = startServer()
+  try:
+    roll()
+  except Exception as e:
+    server.close()
+    raise e
 
 def parseBlacklist():
   blacklist = []

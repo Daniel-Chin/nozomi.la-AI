@@ -70,7 +70,10 @@ def accTagInfo(tag, response):
 def saveNewTagInfo(tag):
   tagInfo = TagInfo()
   tagInfo.parseTag(tag)
-  saveTagInfo(tagInfo)
+  try:
+    saveTagInfo(tagInfo)
+  except FileNotFoundError:
+    raise Exception('Tag name contains too many non-ascii characters!')
 
 def loadOverall():
   try:

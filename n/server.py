@@ -1,5 +1,4 @@
-JOB_POOL_SIZE = 8
-PORT = 2348
+from parameters import JOB_POOL_SIZE, PORT
 
 from threading import Semaphore, Lock, Thread
 from myhttp import Server, OneServer, respond
@@ -91,3 +90,4 @@ class MyServer(Server):
 def startServer():
   server = MyServer(MyOneServer, PORT, name='localhost')
   server.start()
+  return server

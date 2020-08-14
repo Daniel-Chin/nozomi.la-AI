@@ -6,3 +6,4 @@ overall.pickle
 log.log
 blacklist.txt
 *.zip
+parameters.py
