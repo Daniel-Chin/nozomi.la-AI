@@ -77,8 +77,9 @@ def saveNewTagInfo(tag):
 
 def loadOverall():
   try:
-    with open(OVERALL, 'rb') as f:
-      return pickle.load(f)
+    with fileLock:
+      with open(OVERALL, 'rb') as f:
+        return pickle.load(f)
   except FileNotFoundError:
     overall = {}
     for response in ALL_RESPONSES:
@@ -87,8 +88,9 @@ def loadOverall():
     return overall
 
 def saveOverall(overall):
-  with open(OVERALL, 'wb+') as f:
-    pickle.dump(overall, f)
+  with fileLock:
+    with open(OVERALL, 'wb+') as f:
+      pickle.dump(overall, f)
 
 def accOverall(response):
   overall = loadOverall()
