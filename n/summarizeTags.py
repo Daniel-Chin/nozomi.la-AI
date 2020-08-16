@@ -23,8 +23,12 @@ def main():
       total = 0
       for r in ALL_RESPONSES:
         total += ti.n_responses[r]
-      if total < 10:
-        continue
+      if ti.type == 'artist':
+        if total < 1:
+          continue
+      else:
+        if total < 10:
+          continue
       try:
         s = score(ti.n_responses) - baseline
       except ZeroDivisionError:
