@@ -125,6 +125,10 @@ def roll():
           jsons = forceMap(getJSON, population, thread_max=JSON_MAX)
           population = [x for x, y in zip(population, jsons) if y is not None]
           checked_404 = True
+          if not population:
+            print('There is no more. Enter to quit...')
+            input()
+            return
           continue
         has_stuff = True
         doc_id, mode = sample(population)
