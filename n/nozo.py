@@ -87,9 +87,9 @@ class ImageWorker(Thread):
     if DEBUG:
       print('ImageWorker starts...')
     content = getImage(self.url)
-    g.printJobs()
     with self.lock:
       self.result = content
+    g.printJobs()
     self.todo()
     if DEBUG:
       print('ImageWorker ends.')
