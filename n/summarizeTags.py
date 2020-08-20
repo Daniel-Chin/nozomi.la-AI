@@ -1,5 +1,7 @@
 # todo: also filter for occurance
 
+ARTIST_TOTAL_THRESHOLD = 10
+
 from ai import score, ALL_RESPONSES
 from database import listAll, TAGS, loadOverall
 import pickle
@@ -24,7 +26,7 @@ def main():
       for r in ALL_RESPONSES:
         total += ti.n_responses[r]
       if ti.type == 'artist':
-        if total < 1:
+        if total < ARTIST_TOTAL_THRESHOLD:
           continue
       else:
         if total < 10:
