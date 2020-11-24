@@ -28,6 +28,9 @@ Star: 存了
 You can hold alt + hotkey to select a button.   
 按住 Alt 按首字母可以选择按钮。  
 
+Starred contents are automatically downloaded to ./n/imgs  
+Star 的作品自动保存到 ./n/imgs
+
 ## Parameters 
 Use notepad.exe to open `parameters.py`   
 EXPLORE_PROB is the probability of entering EXPLORE Mode.  
