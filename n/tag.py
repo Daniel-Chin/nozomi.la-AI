@@ -20,4 +20,4 @@ class TagInfo:
     return f"<tag {self.name} {self.type} {self.n_responses}>"
   
   def sum(self):
-    return sum([self.n_responses[x] for x in ALL_RESPONSES])
+    return sum([self.n_responses.get(x, 0) for x in ALL_RESPONSES])

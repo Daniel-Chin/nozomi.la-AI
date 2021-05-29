@@ -64,7 +64,9 @@ def accTagInfo(tag, response):
     except FileNotFoundError:
       saveNewTagInfo(tag)
       tagInfo = loadTagInfo(tag.name)
-    tagInfo.n_responses[response] += 1
+    tagInfo.n_responses[response] = tagInfo.n_responses.get(
+      response, 0
+    ) + 1
     saveTagInfo(tagInfo)
 
 def saveNewTagInfo(tag):
@@ -94,7 +96,7 @@ def saveOverall(overall):
 
 def accOverall(response):
   overall = loadOverall()
-  overall[response] += 1
+  overall[response] = overall.get(response, 0) + 1
   saveOverall(overall)
   if DEBUG:
     print('overall', overall)
