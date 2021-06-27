@@ -159,6 +159,7 @@ def roll():
         epoch_step = 1
       else:
         epoch_step += 1
+        epoch_step = min(15, epoch_step)
     else:
       if patient == 1:
         patient = 0
