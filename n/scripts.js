@@ -4,14 +4,16 @@ const EXPLORE = 'EXPLORE';
 const RES_NEGATIVE = 'RES_NEGATIVE';
 const RES_FINE = 'RES_FINE';
 const RES_BETTER = 'RES_BETTER';
+const RES_MORE = 'RES_MORE';
 const RES_WOW = 'RES_WOW';
 const RES_SAVE = 'RES_SAVE';
-const ALL_RESPONSES = [RES_NEGATIVE, RES_FINE, RES_BETTER, RES_WOW, RES_SAVE];
+const ALL_RESPONSES = [RES_NEGATIVE, RES_FINE, RES_BETTER, RES_MORE, RES_WOW, RES_SAVE];
 
 const DISPLAY = {
   RES_NEGATIVE: ['(N)egative', 'I wish to see no more of this'], 
   RES_FINE: ['(O)k', 'I feel neutral'], 
   RES_BETTER: ['(H)as Value', 'I can enjoy it'],
+  RES_MORE: ['(M)ore', 'Show more like this'], 
   RES_WOW: ['(G)ood', 'One of the rare good ones'], 
   RES_SAVE: ['(S)tar', 'Super good. Save to disk'], 
 }
