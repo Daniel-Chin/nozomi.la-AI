@@ -13,6 +13,12 @@ from ai import POOL_SIZE, DEBUG
 from threading import Thread, Lock
 from server import g
 
+
+
+def decode_nozomi(n):
+    for i in range(0, len(n), 4):
+        yield str((n[i] << 24) + (n[i+1] << 16) + (n[i+2] << 8) + n[i+3])
+
 def askMaster(start, end):
   r = get(MASTER_URL, headers={
     'Host': 'n.nozomi.la',
@@ -26,13 +32,9 @@ def askMaster(start, end):
     'Connection': 'keep-alive',
     'TE': 'Trailers',
   })
-  buffer = r.content
-  result = []
-  for i in range(len(buffer) // 4):
-    result.append(str(int.from_bytes(
-      buffer[i*4 : (i+1)*4], 'big', signed=False,
-    )))
-  return result
+  
+  post_ids = list(decode_nozomi(r.content))
+  return post_ids
 
 def urlJSON(doc_id):
   a = doc_id[-1]
