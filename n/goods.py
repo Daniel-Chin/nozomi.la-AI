@@ -33,11 +33,11 @@ def main():
         saveImg(doc, imgs)
       print('Complete.')
   p = input('Input path to download to: ')
-  fns = [osp.join(p, doc.id) + '.' + doc.img_type for doc in wows]
-  missing_fns = [x for x in fns if not osp.exists(x)]
+  fns = [(osp.join(p, doc.id) + '.' + doc.img_type, doc) for doc in wows]
+  missing_fns = [x for x in fns if not osp.exists(x[0])]
   print(f'There are {len(fns)} wow ones. {len(missing_fns)} are not on disk.')
   with Jdt(len(missing_fns)) as j:
-    for fn in missing_fns:
+    for fn, doc in missing_fns:
       j.acc()
       img = getImage(doc.img_urls[0])
       with open(fn, 'wb+') as f:
