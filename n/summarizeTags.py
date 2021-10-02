@@ -2,6 +2,7 @@
 
 ARTIST_TOTAL_THRESHOLD = 10
 
+import csv
 from ai import score, ALL_RESPONSES
 from database import listAll, TAGS, loadOverall
 import pickle
@@ -24,7 +25,7 @@ def main():
       ti = load(i)
       total = 0
       for r in ALL_RESPONSES:
-        total += ti.n_responses[r]
+        total += ti.n_responses.get(r, 0)
       if ti.type == 'artist':
         if total < ARTIST_TOTAL_THRESHOLD:
           continue
@@ -40,9 +41,19 @@ def main():
   print('Sorting...')
   tagInfos.sort(key=lambda x: x[1])
   print()
-  table = [['Score', 'Type', 'Display', 'Name']]
-  for ti, s in tagInfos:
-    table.append([format(s, '+.1f'), str(ti.type), ti.display, ti.name])
+  FILENAME = 'tags_summary.csv'
+  print(f'writing {FILENAME}...')
+  header = ['Score', 'Type', 'Display', 'Name']
+  with open(FILENAME, 'w', encoding='utf-8', newline='') as f:
+    c = csv.writer(f)
+    c.writerow(header)
+    for ti, s in tagInfos:
+      c.writerow([
+        format(s, '+.1f'), str(ti.type), ti.display, ti.name, 
+      ])
+  with open(FILENAME, 'r', encoding='utf-8') as f:
+    c = csv.reader(f)
+    table = [*c]
   printTable(table)
 
 main()
