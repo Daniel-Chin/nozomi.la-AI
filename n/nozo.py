@@ -13,11 +13,14 @@ from ai import POOL_SIZE, DEBUG
 from threading import Thread, Lock
 from server import g
 
-
+class PageOutOfRange(Exception): pass
 
 def decode_nozomi(n):
+  try:
     for i in range(0, len(n), 4):
-        yield str((n[i] << 24) + (n[i+1] << 16) + (n[i+2] << 8) + n[i+3])
+      yield str((n[i] << 24) + (n[i+1] << 16) + (n[i+2] << 8) + n[i+3])
+  except IndexError:
+    raise PageOutOfRange()
 
 def askMaster(start, end):
   r = get(MASTER_URL, headers={

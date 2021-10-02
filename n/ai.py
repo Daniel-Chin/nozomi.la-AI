@@ -45,7 +45,7 @@ def recordResponse(response, doc, img):
 from doc import Doc, Tag, DocNotSuitable
 import database
 import random
-from nozo import getJSON, askMaster, ImageWorker
+from nozo import getJSON, askMaster, ImageWorker, PageOutOfRange
 from itertools import count
 from forcemap import forceMap
 
@@ -119,7 +119,12 @@ def roll():
     if not traversed.get(epoch, False):
       print('epoch', epoch)
       traversed[epoch] = True
-      pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
+      try:
+        pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
+      except PageOutOfRange:
+        print('There is no more. Enter to quit...')
+        input()
+        return
       population = [x for x in pool if not database.doExist(database.DOCS, x)]
       checked_404 = False
       while len(population) >= len(pool) * (1 - VIEW_RATIO):
