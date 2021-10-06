@@ -51,6 +51,7 @@ class MyOneServer(OneServer):
       respond(self.socket, json.dumps({
         'doc_id': _id, 
         'mode': mode,
+        'artists': doc.getArtists(), 
       }).encode())
     elif request.target.split('?')[0] == '/response':
       params = request.target.split('?')[1].split('&')

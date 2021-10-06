@@ -40,7 +40,7 @@ class Doc:
     self.date = json['date']
   
   def getArtists(self):
-    return [x for x in self.tags if x.type == 'artist']
+    return [x.display for x in self.tags if x.type == 'artist']
 
   def __str__(self):
     return f"<doc {self.id} {self.response} {'saved' if self.local_filenames else ''}>"

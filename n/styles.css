@@ -1,8 +1,12 @@
+body {
+  margin: 0;
+}
+
 button {
-  margin: 15px;
-  border-radius: 5px;
+  margin: 0.5em 0;
+  border-radius: 0.4em;
   border: none;
-  padding: 5px 10px;
+  padding: 0.3em 0.8em;
   display: block;
   background-color: #bbb;
   cursor: pointer;
@@ -20,13 +24,14 @@ button {
 }
 
 .right {
-   width: 6rem;
-   float: right;
+  width: 6em;
+  float: right;
+  padding: 0 0.3em;
 }
 
 .left {
-   width: auto;
-   overflow: hidden;
+  width: auto;
+  overflow: hidden;
 }
 
 #imgdiv {
@@ -43,16 +48,29 @@ button {
 
 textarea {
   width: 100%;
-  height: 4rem;
+  height: 5em;
 }
 
 h2 {
   font-size: large;
   text-align: center;
-  padding: 5px;
+  padding: 0.3em;
   background-color: cyan;
 }
 
 #bodypad {
-  padding: 15px;
+  padding: 1em;
+}
+
+#link2nozo {
+  font-size: small;
+}
+
+#artists-name {
+  padding-inline-start: 1em;
+  margin-block-start: 0;
+}
+#artists-name > li {
+  white-space: normal;
+  word-wrap: break-word;
 }

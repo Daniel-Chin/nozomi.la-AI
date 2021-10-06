@@ -43,7 +43,7 @@ const askNew = () => {
   const xmlHttp = new XMLHttpRequest();
   xmlHttp.onreadystatechange = () => {
     if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-      const { doc_id, mode } = JSON.parse(xmlHttp.responseText);
+      const { doc_id, mode, artists } = JSON.parse(xmlHttp.responseText);
       globalObj.doc_id = doc_id;
       const imgDiv = document.getElementById('imgdiv');
       imgDiv.innerHTML = '';
@@ -63,6 +63,15 @@ const askNew = () => {
       const url = `https://nozomi.la/post/${doc_id}.html`
       const link = document.getElementById('link2nozo');
       link.value = url;
+      const artistsUl = document.getElementById('artists-name');
+      while (artistsUl.firstChild) {
+        artistsUl.removeChild(artistsUl.firstChild);
+      }
+      artists.forEach(artist => {
+        const ui = document.createElement('li');
+        ui.innerText = artist;
+        artistsUl.appendChild(ui);
+      });
     }
   }
   xmlHttp.open("GET", `next?rand=${Math.random()}`, true);
