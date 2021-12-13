@@ -51,6 +51,7 @@ class MyOneServer(OneServer):
       respond(self.socket, json.dumps({
         'doc_id': _id, 
         'mode': mode,
+        'artists': doc.getArtists(), 
       }).encode())
     elif request.target.split('?')[0] == '/response':
       params = request.target.split('?')[1].split('&')
@@ -63,7 +64,10 @@ class MyOneServer(OneServer):
         g.jobs.pop(i)
         g.printJobs()
       g.proSem.release()
-      recordResponse(response, doc, imageWorker.result)
+      Thread(
+        target = recordResponse, 
+        args = (response, doc, imageWorker.result), 
+      ).start()
       respond(self.socket, b'ok')
     elif request.target.split('?')[0] == '/img':
       param = request.target.split('?')[1]

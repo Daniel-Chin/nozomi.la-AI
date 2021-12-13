@@ -1,4 +1,6 @@
-from ai import ALL_RESPONSES, RES_NEGATIVE, RES_FINE, RES_BETTER, RES_WOW, RES_SAVE, DEBUG
+# deprecated
+
+from ai import ALL_RESPONSES, RES_NEGATIVE, RES_FINE, RES_BETTER, RES_MORE, RES_WOW, RES_SAVE, DEBUG
 import tkinter as tk
 from PIL import Image, ImageTk
 from nozo import ImageWorker
@@ -14,6 +16,7 @@ DISPLAY = {
   RES_NEGATIVE: ('(N)egative', 'I wish to see no more of this'), 
   RES_FINE: ('(O)k', 'I feel neutral'), 
   RES_BETTER: ('(H)as Value', 'I can enjoy it'),
+  RES_MORE: ('(M)ore', 'Show more like this'), 
   RES_WOW: ('(G)ood', 'One of the rare good ones'), 
   RES_SAVE: ('(S)tar', 'Super good. Save to disk'), 
 }

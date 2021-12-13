@@ -3,17 +3,19 @@ from parameters import DEBUG, START_EPOCH, EXPLORE_PROB, POOL_SIZE, JSON_MAX, VI
 RES_NEGATIVE = 'RES_NEGATIVE'
 RES_FINE = 'RES_FINE'
 RES_BETTER = 'RES_BETTER'
+RES_MORE = 'RES_MORE'
 RES_WOW = 'RES_WOW'
 RES_SAVE = 'RES_SAVE'
 
-ALL_RESPONSES = [RES_NEGATIVE, RES_FINE, RES_BETTER, RES_WOW, RES_SAVE]
+ALL_RESPONSES = [RES_NEGATIVE, RES_FINE, RES_BETTER, RES_MORE, RES_WOW, RES_SAVE]
 
 SCORE = {
-  RES_NEGATIVE: -1,
+  RES_NEGATIVE: -2,
   RES_FINE: 0,
-  RES_BETTER: .5,
-  RES_WOW: 4,
-  RES_SAVE: 10,
+  RES_BETTER: 1,
+  RES_MORE: 2, 
+  RES_WOW: 8,
+  RES_SAVE: 20,
 }
 
 WEIGHT = {
@@ -43,19 +45,19 @@ def recordResponse(response, doc, img):
 from doc import Doc, Tag, DocNotSuitable
 import database
 import random
-from nozo import getJSON, askMaster, ImageWorker
+from nozo import getJSON, askMaster, ImageWorker, PageOutOfRange
 from itertools import count
 from forcemap import forceMap
 
 def score(n_responses):
   sum = 0
   for response in ALL_RESPONSES:
-    sum += n_responses[response]
+    sum += n_responses.get(response, 0)
   if sum < .5:  # round(sum) == 0
     return ATTITUDE_TOWARDS_NOVEL_TAGS
   score = 0
   for response in ALL_RESPONSES:
-    score += n_responses[response] / sum * SCORE[response]
+    score += n_responses.get(response, 0) / sum * SCORE[response]
   return score
 
 def predict(doc: Doc):
@@ -101,7 +103,7 @@ def sample(population):
       except DocNotSuitable:
         continue
     y_hats = [(x.id, predict(x)) for x in docs]
-    highscore = max(*[y for x, y in y_hats])
+    highscore = max([y for x, y in y_hats])
     results = [x for x, y in y_hats if y == highscore]
     return (results[0], EXPLOIT)
 
@@ -117,7 +119,12 @@ def roll():
     if not traversed.get(epoch, False):
       print('epoch', epoch)
       traversed[epoch] = True
-      pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
+      try:
+        pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
+      except PageOutOfRange:
+        print('There is no more. Enter to quit...')
+        input()
+        return
       population = [x for x in pool if not database.doExist(database.DOCS, x)]
       checked_404 = False
       while len(population) >= len(pool) * (1 - VIEW_RATIO):
@@ -157,6 +164,7 @@ def roll():
         epoch_step = 1
       else:
         epoch_step += 1
+        epoch_step = min(15, epoch_step)
     else:
       if patient == 1:
         patient = 0

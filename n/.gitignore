@@ -7,3 +7,6 @@ log.log
 blacklist.txt
 *.zip
 parameters.py
+tags_summary.csv
+already_tags.txt
+tags_subtract.csv
