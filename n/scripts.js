@@ -26,6 +26,8 @@ const globalObj = {
   doc_id: null, 
 }
 
+let artist_str = '';
+
 window.onload = () => {
   const buttonDiv = document.getElementById('buttondiv');
   for (const response of ALL_RESPONSES) {
@@ -67,10 +69,12 @@ const askNew = () => {
       while (artistsUl.firstChild) {
         artistsUl.removeChild(artistsUl.firstChild);
       }
+      artist_str = '';
       artists.forEach(artist => {
         const ui = document.createElement('li');
         ui.innerText = artist;
         artistsUl.appendChild(ui);
+        artist_str += artist + '\n';
       });
     }
   }
@@ -99,4 +103,7 @@ const onClick = (response) => {
     }&response=${response}`, true, 
   );
   xmlHttp.send(null);
+  if (response === RES_SAVE) {
+    alert('Artists: \n' + artist_str);
+  }
 };
