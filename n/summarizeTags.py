@@ -22,7 +22,11 @@ def main():
   with Jdt(len(la), 'Evaluating...', UPP=8) as j:
     for i in la:
       j.acc()
-      ti = load(i)
+      try:
+        ti = load(i)
+      except FileNotFoundError as e:
+        print(e)
+        continue
       total = 0
       for r in ALL_RESPONSES:
         total += ti.n_responses.get(r, 0)
