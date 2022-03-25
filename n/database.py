@@ -22,12 +22,12 @@ def saveImg(doc, imgs):
   doc.local_filenames = []
   for i, content in enumerate(imgs):
     filename = f'{doc.id}_{i}.{doc.img_type}'
-    with open(f'{IMGS}/{filename}', 'wb+') as f:
+    with open(f'{IMGS}/{filename}', 'wb') as f:
       f.write(content)
     doc.local_filenames.append(filename)
 
 def saveDoc(doc):
-  with open(f'{DOCS}/{doc.id}', 'wb+') as f:
+  with open(f'{DOCS}/{doc.id}', 'wb') as f:
     pickle.dump(doc, f)
 
 def loadDoc(doc_id):
@@ -54,7 +54,7 @@ def saveTagInfo(tagInfo):
       print("saveTagInfo: tagInfo.name == 'artist'")
       from console import console
       console({**locals(), **globals()})
-    with open(f'{TAGS}/{legalizeTagName(tagInfo.name)}', 'wb+') as f:
+    with open(f'{TAGS}/{legalizeTagName(tagInfo.name)}', 'wb') as f:
       pickle.dump(tagInfo, f)
 
 def accTagInfo(tag, response):
@@ -91,7 +91,7 @@ def loadOverall():
 
 def saveOverall(overall):
   with fileLock:
-    with open(OVERALL, 'wb+') as f:
+    with open(OVERALL, 'wb') as f:
       pickle.dump(overall, f)
 
 def accOverall(response):

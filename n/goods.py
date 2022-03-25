@@ -40,7 +40,7 @@ def main():
     for fn, doc in missing_fns:
       j.acc()
       img = getImage(doc.img_urls[0])
-      with open(fn, 'wb+') as f:
+      with open(fn, 'wb') as f:
         f.write(img)
   input('Ok. Press enter to quit...')
 

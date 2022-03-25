@@ -36,7 +36,7 @@ def parseBlacklist():
           else:
             blacklist.append(line)
   except FileNotFoundError:
-    with open('blacklist.txt', 'w+') as f:
+    with open('blacklist.txt', 'w') as f:
       f.write('\n')
   setBlackList(blacklist)
 
