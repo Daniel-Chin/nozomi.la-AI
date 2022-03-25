@@ -42,5 +42,5 @@ class Doc:
   def getArtists(self):
     return [x.display for x in self.tags if x.type == 'artist']
 
-  def __str__(self):
+  def __repr__(self):
     return f"<doc {self.id} {self.response} {'saved' if self.local_filenames else ''}>"
