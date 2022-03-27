@@ -1,4 +1,8 @@
 # Nozomi.la AI
+## March 2022 update
+I changed the database format. Please run `upgradeDatabase.py` to convert your previous database to the new format. You only need to run this once. 
+
+## Intro
 The author is not affiliated to Nozomi.la. This is a third-party tool.  
 作者与Nozomi.la没有从属关系。本工具是第三方工具。 
 The author failed to contact Nozomi.la. If nozomi.la wants to contact the author, feel free to reach me on Github.  

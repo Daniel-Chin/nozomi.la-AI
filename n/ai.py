@@ -29,7 +29,7 @@ EXPLORE = 'EXPLORE'
 blacklist = []
 
 def recordResponse(response, doc, img):
-  if database.doExist(database.DOCS, doc.id):
+  if database.docExists(doc.id):
     raise Exception('Error 2049284234')
   doc.response = response
   database.saveDoc(doc)
@@ -43,10 +43,9 @@ def recordResponse(response, doc, img):
     database.saveImg(doc, [img])
 
 from doc import Doc, Tag, DocNotSuitable
-import database
+from database import database
 import random
 from nozo import getJSON, askMaster, ImageWorker, PageOutOfRange
-from itertools import count
 from forcemap import forceMap
 
 def score(n_responses):
@@ -71,7 +70,7 @@ def predict(doc: Doc):
   for tag in doc.tags:
     try:
       tagInfo = database.loadTagInfo(tag.name)
-    except FileNotFoundError:
+    except KeyError:
       database.saveNewTagInfo(tag)
       tagInfo = database.loadTagInfo(tag.name)
     try:
@@ -125,7 +124,7 @@ def roll():
         print('There is no more. Enter to quit...')
         input()
         return
-      population = [x for x in pool if not database.doExist(database.DOCS, x)]
+      population = [x for x in pool if not database.docExists(x)]
       checked_404 = False
       while len(population) >= len(pool) * (1 - VIEW_RATIO):
         if not checked_404:
@@ -148,7 +147,8 @@ def roll():
           continue
         if DEBUG:
           print('Waiting for proSem...')
-        g.proSem.acquire()
+        while not g.proSem.acquire(timeout=1):
+          pass
         if DEBUG:
           print('proSem acquired')
         job = Job(doc, ImageWorker(doc.img_urls[0]), mode)

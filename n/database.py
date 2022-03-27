@@ -1,110 +1,114 @@
-DOCS = 'docs'
+DOCS = 'docs.shelve'
+TAGS = 'tags.shelve'
 IMGS = 'imgs'
-TAGS = 'tags'
 OVERALL = 'overall.pickle'
 
 import os
-from nozo import getImage
-import pickle
-from tag import TagInfo
-from ai import ALL_RESPONSES, DEBUG
 import os.path as os_path
 from threading import Lock
+import pickle
+import shelve
+from exclusive import Exclusive
+from tag import TagInfo
+from ai import ALL_RESPONSES, DEBUG
+from doc import Doc
 
-fileLock = Lock()
-accLock = Lock()
+class Database:
+  def __init__(self) -> None:
+    self.lock = Lock()
+    self.accLock = Lock()
+    self.exclusive = Exclusive('exclusive')
+  
+  def __enter__(self):
+    self.exclusive.acquire()
+    self.docs = shelve.open(DOCS)
+    self.tags = shelve.open(TAGS)
+    self.docs.__enter__()
+    self.tags.__enter__()
+    os.makedirs(IMGS, exist_ok=True)
+    return self
+  
+  def __exit__(self, *_):
+    self.docs.__exit__(None, None, None)
+    self.tags.__exit__(None, None, None)
+    self.exclusive.release()
+    return False
 
-def listAll(x):
-  return os.listdir(x)
+  def listAllDocs(self):
+    return self.docs.keys()
 
-def saveImg(doc, imgs):
-  # also writes `doc.local_filenames`
-  doc.local_filenames = []
-  for i, content in enumerate(imgs):
-    filename = f'{doc.id}_{i}.{doc.img_type}'
-    with open(f'{IMGS}/{filename}', 'wb') as f:
-      f.write(content)
-    doc.local_filenames.append(filename)
+  def listAllTags(self):
+    return self.tags.keys()
+  
+  def listAllImgs(self):
+    return os.listdir(IMGS)
 
-def saveDoc(doc):
-  with open(f'{DOCS}/{doc.id}', 'wb') as f:
-    pickle.dump(doc, f)
+  def saveImg(self, doc : Doc, imgs):
+    # also writes `doc.local_filenames`
+    doc.local_filenames = []
+    for i, content in enumerate(imgs):
+      filename = f'{doc.id}_{i}.{doc.img_type}'
+      with open(os_path.join(IMGS, filename), 'wb') as f:
+        f.write(content)
+      doc.local_filenames.append(filename)
 
-def loadDoc(doc_id):
-  with open(f'{DOCS}/{doc_id}', 'rb') as f:
-    return pickle.load(f)
+  def saveDoc(self, doc : Doc):
+    self.docs[doc.id] = doc
 
-def legalizeTagName(name):
-  result = ''
-  for char in name:
-    if char.isalnum() or char == '_':
-      result += char
-    else:
-      result += f'chr({ord(char)})'
-  return result
+  def loadDoc(self, doc_id):
+    return self.docs[doc_id]
 
-def loadTagInfo(name):
-  with fileLock:
-    with open(f'{TAGS}/{legalizeTagName(name)}', 'rb') as f:
-      return pickle.load(f)
+  def loadTagInfo(self, name):
+    with self.lock:
+      return self.tags[name]
 
-def saveTagInfo(tagInfo):
-  with fileLock:
-    if tagInfo.name == 'artist':
-      print("saveTagInfo: tagInfo.name == 'artist'")
-      from console import console
-      console({**locals(), **globals()})
-    with open(f'{TAGS}/{legalizeTagName(tagInfo.name)}', 'wb') as f:
-      pickle.dump(tagInfo, f)
+  def saveTagInfo(self, tagInfo : TagInfo):
+    with self.lock:
+      self.tags[tagInfo.name] = tagInfo
 
-def accTagInfo(tag, response):
-  with accLock:
+  def accTagInfo(self, tag : TagInfo, response):
+    with self.accLock:
+      try:
+        tagInfo = self.loadTagInfo(tag.name)
+      except KeyError:
+        self.saveNewTagInfo(tag)
+        tagInfo = self.loadTagInfo(tag.name)
+      tagInfo.n_responses[response] = tagInfo.n_responses.get(
+        response, 0
+      ) + 1
+      self.saveTagInfo(tagInfo)
+
+  def saveNewTagInfo(self, tag):
+    tagInfo = TagInfo()
+    tagInfo.parseTag(tag)
+    self.saveTagInfo(tagInfo)
+
+  def loadOverall(self):
     try:
-      tagInfo = loadTagInfo(tag.name)
+      with self.lock:
+        with open(OVERALL, 'rb') as f:
+          return pickle.load(f)
     except FileNotFoundError:
-      saveNewTagInfo(tag)
-      tagInfo = loadTagInfo(tag.name)
-    tagInfo.n_responses[response] = tagInfo.n_responses.get(
-      response, 0
-    ) + 1
-    saveTagInfo(tagInfo)
+      overall = {}
+      for response in ALL_RESPONSES:
+        overall[response] = 0
+      self.saveOverall(overall)
+      return overall
 
-def saveNewTagInfo(tag):
-  tagInfo = TagInfo()
-  tagInfo.parseTag(tag)
-  try:
-    saveTagInfo(tagInfo)
-  except FileNotFoundError:
-    raise Exception('Tag name contains too many non-ascii characters!')
+  def saveOverall(self, overall):
+    with self.lock:
+      with open(OVERALL, 'wb') as f:
+        pickle.dump(overall, f)
 
-def loadOverall():
-  try:
-    with fileLock:
-      with open(OVERALL, 'rb') as f:
-        return pickle.load(f)
-  except FileNotFoundError:
-    overall = {}
-    for response in ALL_RESPONSES:
-      overall[response] = 0
-    saveOverall(overall)
-    return overall
+  def accOverall(self, response):
+    with self.accLock:
+      overall = self.loadOverall()
+      overall[response] = overall.get(response, 0) + 1
+      self.saveOverall(overall)
+    if DEBUG:
+      print('overall', overall)
 
-def saveOverall(overall):
-  with fileLock:
-    with open(OVERALL, 'wb') as f:
-      pickle.dump(overall, f)
+  def docExists(self, doc_id):
+    return doc_id in self.docs
 
-def accOverall(response):
-  overall = loadOverall()
-  overall[response] = overall.get(response, 0) + 1
-  saveOverall(overall)
-  if DEBUG:
-    print('overall', overall)
-
-def doExist(x, name):
-  return os_path.isfile(x + '/' + name)
-
-def init():
-  for i in [DOCS, TAGS, IMGS]:
-    if not os_path.isdir(i):
-      os.mkdir(i)
+database = Database()

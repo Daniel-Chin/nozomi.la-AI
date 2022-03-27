@@ -1,21 +1,21 @@
 from ai import RES_SAVE, RES_WOW
-from database import listAll, loadDoc, IMGS, DOCS, saveImg
+from database import database
 from doc import Doc
 from jdt import Jdt
 from nozo import getImage
 import os.path as osp
 
 def main():
-  all_imgs = [x.split('_')[0] for x in listAll(IMGS)]
+  all_imgs = [x.split('_')[0] for x in database.listAllImgs()]
   print(len(all_imgs), 'images on disk')
-  all_docs = listAll(DOCS)
+  all_docs = database.listAllDocs()
   print(len(all_docs), 'docs viewed')
   wows = []
   saves = []
   with Jdt(len(all_docs), 'filtering', UPP=4) as j:
     for doc_id in all_docs:
       j.acc()
-      doc: Doc = loadDoc(doc_id)
+      doc: Doc = database.loadDoc(doc_id)
       if doc.response == RES_SAVE:
         saves.append(doc)
       elif doc.response == RES_WOW:
@@ -30,7 +30,7 @@ def main():
         doc = [x for x in saves if x.id == id][0]
         print('Getting', doc.id, '...')
         imgs = [getImage(x) for x in doc.img_urls]
-        saveImg(doc, imgs)
+        database.saveImg(doc, imgs)
       print('Complete.')
   p = input('Input path to download to: ')
   fns = [(osp.join(p, doc.id) + '.' + doc.img_type, doc) for doc in wows]
@@ -44,4 +44,5 @@ def main():
         f.write(img)
   input('Ok. Press enter to quit...')
 
-main()
+with database:
+  main()
