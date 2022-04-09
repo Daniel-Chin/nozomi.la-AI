@@ -22,6 +22,8 @@ def main():
       pass
     finally:
       server.close()
+      print('server closed.')
+  print('db closed.')
 
 def parseBlacklist():
   blacklist = []
