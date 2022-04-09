@@ -91,7 +91,7 @@ def sample(population):
   if random.random() < EXPLORE_PROB:
     # Explore
     doc_id = random.choice(population)
-    return (doc_id, EXPLORE)
+    return doc_id, EXPLORE
   else:
     # Exploit
     jsons = [getJSON(x) for x in population]
@@ -101,10 +101,21 @@ def sample(population):
         docs.append(Doc(j))
       except DocNotSuitable:
         continue
-    y_hats = [(x.id, predict(x)) for x in docs]
-    highscore = max([y for x, y in y_hats])
-    results = [x for x, y in y_hats if y == highscore]
-    return (results[0], EXPLOIT)
+    if docs:
+      try:
+        y_hats = [(x.id, predict(x)) for x in docs]
+      except EOFError as e:
+        print(e)
+        print(
+          'Database may be corrupted. Delete all '
+          'tag files and run `comileTags.py`. '
+        )
+        raise ValueError
+      highscore = max([y for x, y in y_hats])
+      results = [x for x, y in y_hats if y == highscore]
+    else:
+      raise EOFError
+    return results[0], EXPLOIT
 
 def roll():
   print('blacklist is', blacklist)
@@ -121,7 +132,7 @@ def roll():
       try:
         pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
       except PageOutOfRange:
-        print('There is no more. Enter to quit...')
+        print('There is no more! Enter to quit...')
         input()
         return
       population = [x for x in pool if not database.docExists(x)]
@@ -137,7 +148,10 @@ def roll():
             return
           continue
         has_stuff = True
-        doc_id, mode = sample(population)
+        try:
+          doc_id, mode = sample(population)
+        except EOFError:
+          continue
         population.pop(population.index(doc_id))
         try:
           doc = Doc(getJSON(doc_id))
