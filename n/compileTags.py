@@ -1,5 +1,7 @@
 '''
 compile tag info from doc info.  
+Delete tag.shelve.* (if you are sure) before running  
+this script.  
 '''
 
 import ai
