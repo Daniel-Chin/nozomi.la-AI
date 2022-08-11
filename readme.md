@@ -40,13 +40,13 @@ Use notepad.exe to open `parameters.py`
 EXPLORE_PROB is the probability of entering EXPLORE Mode.  
 VIEW_RATIO determines the top percentile that the AI will show you. For example, ".2" means in each batch of documents the AI will only show you the top 20% that are predicted to be good.   
 ATTITUDE_TOWARDS_NOVEL_TAGS. If &gt;0, tags that are never shown before will be welcome. If =0, ai will use a balanced statictic model.  
-JOB_POOL_SIZE is the size of the local pre-fetch cache. If the images load too slowly, try increasing this parameter. If Nozomi.la starts to refuse your connections, try lowering this parameter.   
+JOB_POOL_SIZE is the size of the local pre-fetch cache. If the images load too slowly, try increasing this parameter. However, bigger cache size means your preferences will be reflected in the recommendations with higher latency.   
+JOB_POOL_THROTTLE, in unit of seconds, spaces out image requests. Low: Faster image loading. High: Nicer to nozomi.la servers.  
 调参   
 使用记事本打开 `parameters.py`，更改参数。  
 EXPLORE_PROB 是 EXPLORE Mode 的出现频率。  
 VIEW_RATIO 决定推荐的精品程度。比如，".2"就会让AI只给你推荐每一批作品中预测你会最喜欢的20%。    
 ATTITUDE_TOWARDS_NOVEL_TAGS. 如果 &gt;0, 从未见过的 tags 将会人为增加推荐概率；如果 =0，ai 会以以往tags的平均分数评估新tags。  
-JOB_POOL_SIZE 是本地预抓取的池子大小。如果图片加载慢，尝试上调这一参数。如果Nozomi.la开始拒绝连接请求，说明我们并发请求太多了，试着下调这一参数。  
 
 ## Blacklist 
 Add tag names to `blacklist.txt` to achieve force exclusion. They won't even show up in EXPLORE mode.   
