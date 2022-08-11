@@ -1,7 +1,7 @@
 MASTER_URL = 'https://n.nozomi.la/index.nozomi'
 TAG_URL = 'https://n.nozomi.la/nozomi/%s.nozomi'
 
-from parameters import FILTER
+from parameters import FILTER, JOB_POOL_THROTTLE
 if FILTER:
   MASTER_URL = TAG_URL % FILTER
 from time import time, sleep
@@ -94,7 +94,7 @@ class ImageWorker(Thread):
   
   def run(self):
     with __class__.last_request_lock:
-      my_time = max(time(), __class__.last_request + 2)
+      my_time = max(time(), __class__.last_request + JOB_POOL_THROTTLE)
       __class__.last_request = my_time
     sleep(max(0, my_time - time()))
     if DEBUG:

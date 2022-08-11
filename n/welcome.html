@@ -56,6 +56,7 @@
   VIEW_RATIO determines the top percentile that the AI will show you. For example, ".2" means in each batch of documents the AI will only show you the top 20% that are predicted to be good. <br />
   ATTITUDE_TOWARDS_NOVEL_TAGS. If &gt;0, tags that are never shown before will be welcome. If =0, ai will use a balanced statictic model.<br />
   JOB_POOL_SIZE is the size of the local pre-fetch cache. If the images load too slowly, try increasing this parameter. However, bigger cache size means your preferences will be reflected in the recommendations with higher latency. <br />
+  JOB_POOL_THROTTLE, in unit of seconds, spaces out image requests. Low: Faster image loading. High: Nicer to nozomi.la servers. 
   调参 <br />
   使用记事本打开 `parameters.py`，更改参数。<br />
   EXPLORE_PROB 是 EXPLORE Mode 的出现频率。<br />
