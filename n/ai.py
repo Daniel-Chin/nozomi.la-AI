@@ -1,4 +1,4 @@
-from parameters import DEBUG, START_EPOCH, EXPLORE_PROB, POOL_SIZE, JSON_MAX, VIEW_RATIO, ATTITUDE_TOWARDS_NOVEL_TAGS
+from parameters import DEBUG, START_EPOCH, EXPLORE_PROB, POOL_SIZE, JSON_MAX, VIEW_RATIO, ATTITUDE_TOWARDS_NOVEL_TAGS, FILTER
 
 RES_NEGATIVE = 'RES_NEGATIVE'
 RES_FINE = 'RES_FINE'
@@ -13,9 +13,9 @@ SCORE = {
   RES_NEGATIVE: -2,
   RES_FINE: 0,
   RES_BETTER: 1,
-  RES_MORE: 2, 
-  RES_WOW: 8,
-  RES_SAVE: 20,
+  RES_MORE: 5, 
+  RES_WOW: 15,
+  RES_SAVE: 15,
 }
 
 WEIGHT = {
@@ -171,22 +171,25 @@ def roll():
           g.jobs.append(job)
           g.printJobs()
         job.imageWorker.start()
-    if has_stuff:
-      patient = 1
-      if epoch_step != 1:
-        epoch -= epoch_step - 1
-        epoch_step = 1
+    if FILTER == '':
+      if has_stuff:
+        patient = 1
+        if epoch_step != 1:
+          epoch -= epoch_step - 1
+          epoch_step = 1
+        else:
+          epoch_step += 1
+          epoch_step = min(15, epoch_step)
       else:
-        epoch_step += 1
-        epoch_step = min(15, epoch_step)
+        if patient == 1:
+          patient = 0
+        else:
+          epoch_step *= 2
+          if random.random() < .3:
+            epoch -= random.randint(0, epoch_step)
+        epoch += epoch_step
     else:
-      if patient == 1:
-        patient = 0
-      else:
-        epoch_step *= 2
-        if random.random() < .3:
-          epoch -= random.randint(0, epoch_step)
-      epoch += epoch_step
+      epoch += 1
 
 def setBlackList(bl):
   blacklist.clear()
