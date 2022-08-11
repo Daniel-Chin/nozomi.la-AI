@@ -2,3 +2,4 @@ __pycache__/
 *.zip
 less/
 already_tags.txt
+*.lnk
