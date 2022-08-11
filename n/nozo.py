@@ -4,6 +4,7 @@ TAG_URL = 'https://n.nozomi.la/nozomi/%s.nozomi'
 from parameters import FILTER
 if FILTER:
   MASTER_URL = TAG_URL % FILTER
+from time import time, sleep
 from requests import get
 from math import floor
 from json import loads
@@ -82,6 +83,9 @@ def getImage(url):
   return r.content
 
 class ImageWorker(Thread):
+  last_request = time()
+  last_request_lock = Lock()
+
   def __init__(self, url):
     super().__init__()
     self.url = url
@@ -89,6 +93,10 @@ class ImageWorker(Thread):
     self.result = None
   
   def run(self):
+    with __class__.last_request_lock:
+      my_time = max(time(), __class__.last_request + 2)
+      __class__.last_request = my_time
+    sleep(max(0, my_time - time()))
     if DEBUG:
       print('ImageWorker starts...')
     content = getImage(self.url)
