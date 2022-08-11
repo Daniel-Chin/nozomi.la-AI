@@ -1,6 +1,6 @@
 # todo: also filter for occurance
 
-ARTIST_TOTAL_THRESHOLD = 10
+ARTIST_TOTAL_THRESHOLD = 0
 
 import csv
 from ai import score, ALL_RESPONSES
