@@ -3,7 +3,7 @@ Like dummy.Pool.map, but no limit of number of threads.
 Useful when IO-bound. 
 '''
 from threading import Thread, Lock, Condition
-from queue import Queue
+from queue import Queue, Empty
 
 def forceMap(function, iter_input, thread_max = 4):
     thread_num = 0
@@ -20,7 +20,10 @@ def forceMap(function, iter_input, thread_max = 4):
             result_num += 1
             MyThread(i, input, function, queue)
     while result_num < len(list_output):
-        id, output = queue.get()
+        try:
+            id, output = queue.get(timeout=1)
+        except Empty:
+            continue
         list_output[id] = output
         result_num += 1
     return list_output
