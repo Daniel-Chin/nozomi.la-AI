@@ -38,21 +38,24 @@ class MyOneServer(OneServer):
       with open('index.html', 'rb') as f:
         respond(self.socket, f.read())
     elif request.target.split('?')[0] == '/next':
-      g.conSem.acquire()
-      with g.jobsLock:
-        for doc, imageWorker, mode in g.jobs:
-          with imageWorker.lock:
-            if imageWorker.result is not None:
-              _id = doc.id
-              _mode = mode
-              break
-        else:
-          raise Exception('Error 32759832')
-      respond(self.socket, json.dumps({
-        'doc_id': _id, 
-        'mode': mode,
-        'artists': doc.getArtists(), 
-      }).encode())
+      if g.conSem.acquire(timeout=1):
+        with g.jobsLock:
+          for doc, imageWorker, mode in g.jobs:
+            with imageWorker.lock:
+              if imageWorker.result is not None:
+                _id = doc.id
+                _mode = mode
+                break
+          else:
+            raise Exception('Error 32759832')
+        respond(self.socket, json.dumps({
+          'doc_id': _id, 
+          'mode': mode,
+          'artists': doc.getArtists(), 
+        }).encode())
+      else:
+        # timeout
+        respond(self.socket, b'empty')
     elif request.target.split('?')[0] == '/response':
       params = request.target.split('?')[1].split('&')
       doc_id = params[0].lstrip('doc_id=')
