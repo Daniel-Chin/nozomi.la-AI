@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import List
 from parameters import JOB_POOL_SIZE, PORT
 
 from threading import Semaphore, Lock, Thread
@@ -17,10 +20,14 @@ class G:
     self.jobsLock = Lock()
     for _ in range(JOB_POOL_SIZE):
       self.conSem.acquire()
-    self.jobs = []
+    self.jobs: List[Job] = []
   
   def printJobs(self):
     print('jobs', ['I' if x.imageWorker.result is not None else '_' for x in self.jobs])
+  
+  def close(self):
+    for job in self.jobs:
+      job.imageWorker.close()
 
 g = G()
 

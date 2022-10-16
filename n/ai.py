@@ -117,7 +117,7 @@ def sample(population):
       raise EOFError
     return results[0], EXPLOIT
 
-def roll():
+def roll(session):
   print('blacklist is', blacklist)
   print('If at least one of them show up in a doc, the doc will not show up, not even in EXPLORE mode.')
   epoch = START_EPOCH
@@ -165,7 +165,7 @@ def roll():
           pass
         if DEBUG:
           print('proSem acquired')
-        job = Job(doc, ImageWorker(doc.img_urls[0]), mode)
+        job = Job(doc, ImageWorker(doc.img_urls[0], session), mode)
         job.imageWorker.todo = g.conSem.release
         with g.jobsLock:
           g.jobs.append(job)

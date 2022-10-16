@@ -1,10 +1,11 @@
 import os
-from parameters import DEBUG, PORT
+from parameters import DEBUG, PORT, JOB_POOL_SIZE
 from ai import roll, setBlackList
-from server import startServer
+from server import startServer, g
 import webbrowser
 import myhttp
 from database import database
+from requests_futures.sessions import FuturesSession
 
 def main():
   abspath = os.path.abspath(__file__)
@@ -16,13 +17,16 @@ def main():
       myhttp.myLogger.verbose = False
       webbrowser.open(f'http://localhost:{PORT}/welcome.html')
     server = startServer()
-    try:
-      roll()
-    except KeyboardInterrupt:
-      pass
-    finally:
-      server.close()
-      print('server closed.')
+    with FuturesSession(max_workers=JOB_POOL_SIZE) as session:
+      try:
+        roll(session)
+      except KeyboardInterrupt:
+        pass
+      finally:
+        g.close()
+        server.close()
+        print('server closed.')
+    print('FuturesSession closed.')
   print('db closed.')
 
 def parseBlacklist():

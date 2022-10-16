@@ -5,13 +5,14 @@ from parameters import FILTER, JOB_POOL_THROTTLE
 if FILTER:
   MASTER_URL = TAG_URL % FILTER
 from time import time, sleep
-from requests import get
-from math import floor
+from requests import get, Response
 from json import loads
 from json.decoder import JSONDecodeError
 from functools import lru_cache
 from ai import POOL_SIZE, DEBUG
 from threading import Thread, Lock
+import concurrent.futures as futures
+from requests_futures.sessions import FuturesSession
 from server import g
 
 class PageOutOfRange(Exception): pass
@@ -69,8 +70,8 @@ def getJSON(doc_id):
     print(r.text)
     raise e
 
-def getImage(url):
-  r = get(url, headers = {
+def imageHeaders():
+  return {
     'Host': 'i.nozomi.la',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
     'Accept': 'image/webp,*/*',
@@ -78,30 +79,63 @@ def getImage(url):
     'Accept-Encoding': 'gzip, deflate, br',
     'Referer': 'https://nozomi.la/',
     'Connection': 'keep-alive',
-  })
-  assert r.content is not None
-  return r.content
+  }
 
 class ImageWorker(Thread):
   last_request = time()
   last_request_lock = Lock()
 
-  def __init__(self, url):
+  def __init__(self, url, session: FuturesSession):
     super().__init__()
     self.url = url
+    self.session = session
     self.lock = Lock()
     self.result = None
+    self.go_on = True
+  
+  def close(self):
+    self.go_on = False
+  
+  def sleep(self, t):
+    while True:
+      if not self.go_on:
+        return
+      if t < .5:
+        sleep(t)
+        break
+      else:
+        sleep(.5)
+        t -= .5
   
   def run(self):
     with __class__.last_request_lock:
       my_time = max(time(), __class__.last_request + JOB_POOL_THROTTLE)
       __class__.last_request = my_time
-    sleep(max(0, my_time - time()))
+    self.sleep(max(0, my_time - time()))
+    if self.go_on:
+      if DEBUG:
+        print('going on...')
+    else:
+      return
     if DEBUG:
       print('ImageWorker starts...')
-    content = getImage(self.url)
+    try:
+      future: futures.Future = self.session.get(
+        self.url, headers=imageHeaders(), 
+      )
+    except RuntimeError as e:
+      print('warning:', e, *e.args)
+      return
+    while True:
+      try:
+        response: Response = future.result(timeout=1)
+      except futures.TimeoutError:
+        if not self.go_on:
+          return
+      else:
+        break
     with self.lock:
-      self.result = content
+      self.result = response.content
     g.printJobs()
     self.todo()
     if DEBUG:
