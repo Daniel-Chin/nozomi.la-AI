@@ -45,6 +45,10 @@ const askNew = () => {
   const xmlHttp = new XMLHttpRequest();
   xmlHttp.onreadystatechange = () => {
     if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+      if (xmlHttp.responseText === 'empty') {
+        askNew();
+        return;
+      }
       const { doc_id, mode, artists } = JSON.parse(xmlHttp.responseText);
       globalObj.doc_id = doc_id;
       const imgDiv = document.getElementById('imgdiv');
