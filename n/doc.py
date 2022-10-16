@@ -30,7 +30,13 @@ class Doc:
       raise DocNotSuitable
     for i in json['imageurls']:
       if not i['is_video']:
-        self.img_urls.append('https:' + i['imageurl'])
+        hash = i['dataid']
+        ext = i['type']
+        self.img_urls.append(f'''https://i.nozomi.la/{
+          hash[-1]
+        }/{
+          hash[-3:-1]
+        }/{hash}.{ext}''')
     if not self.img_urls:
       raise DocNotSuitable
     self.id = str(json['postid'])
