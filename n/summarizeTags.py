@@ -51,6 +51,7 @@ def main():
         c.writerow([
           format(s, '+.1f'), str(ti.type), ti.display, ti.name, 
         ])
+    input('Press Enter to display...')
     with open(FILENAME, 'r', encoding='utf-8') as f:
       c = csv.reader(f)
       table = [*c]
