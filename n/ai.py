@@ -156,7 +156,8 @@ def HumanInLoop(
           continue
         if not exitLock.locked: return
         yield imageRequester.sched(PoolItem(doc, None, mode))
-        print('after yield')
+        if DEBUG:
+          print('after yield')
     if not FILTER:
       if has_stuff:
         patient = 1

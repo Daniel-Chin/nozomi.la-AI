@@ -1,3 +1,4 @@
+import sys
 import os
 from os import path
 from contextlib import contextmanager
@@ -25,17 +26,23 @@ class Database:
     self.exclusive = Exclusive('exclusive')
     self.exitLock = exitLock
   
-  @contextmanager
-  def context(self):
-    with self.exclusive, \
-         shelve.open(DOCS) as self._docs, \
-         shelve.open(TAGS) as self._tagInfos:
-      os.makedirs(IMGS, exist_ok=True)
-      try:
-        yield self
-      finally:
-        self.lock.acquire(timeout=1)
+  def __enter__(self):
+    self.exclusive.__enter__()
+    self._docs     = shelve.open(DOCS)
+    self._tagInfos = shelve.open(TAGS)
+    self._docs    .__enter__()
+    self._tagInfos.__enter__()
+    os.makedirs(IMGS, exist_ok=True)
+    return self
+  
+  def __exit__(self, *args):
+    if not self.lock.acquire(timeout=3):
+      print('Severe warning!!! Database wrote to disk without lock acquired.')
+    self._tagInfos.__exit__(*args)
+    self._docs    .__exit__(*args)
     self.lock.release()
+    self.exclusive.__exit__(*args)
+    return False
   
   @contextmanager
   def okAfterClose(self):
@@ -43,7 +50,9 @@ class Database:
       yield self
     except ValueError as e:
       if e.args[0] == 'invalid operation on closed shelf':
-        assert not self.exitLock.locked
+        assert self.exitLock.acquire(timeout=1)
+        self.exitLock.release()
+        sys.exit(0)
       else:
         raise e
   

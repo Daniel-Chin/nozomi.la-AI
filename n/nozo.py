@@ -77,11 +77,16 @@ def getJSONs(doc_ids: List[str], session: FuturesSession):
         'TE': 'Trailers',
       }))
     except RuntimeError as e:
-      print('Warning:', e)
+      print('warning:', e, *e.args)
+      return []
   jsons = []
   futures.wait(fs)
   for future in fs:
-    response = future.result()
+    try:
+      response = future.result()
+    except ConnectionError as e:
+      print('warning:', e, *e.args)
+      return []
     if '404 Not Found' in response.text or response.status_code == 404:
       print(f'{doc_id} has 404 not found')
       jsons.append(None)
@@ -115,7 +120,10 @@ class ImageRequester:
     if dt == 0:
       self._do(url, 0, poolItem)
     else:
-      Thread(target=self._do, args=[url, dt, poolItem]).start()
+      Thread(
+        target=self._do, args=[url, dt, poolItem], 
+        name='_do', 
+      ).start()
   
   def _do(self, url: str, wait_time: float, poolItem):
     if wait_time != 0:
@@ -139,8 +147,9 @@ class ImageRequester:
     self, future: futures.Future[Response], 
     poolItem: PoolItem, 
   ):
-    if self.exitLock.acquire():
-      self.exitLock.release()
+    if DEBUG:
+      print('onReceive')
+    if not self.exitLock.locked:
       return
     poolItem.image = future.result().content
     self.imagePool.receive(poolItem)

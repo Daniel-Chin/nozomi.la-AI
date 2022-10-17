@@ -1,12 +1,12 @@
 from typing import Optional
 
-DEBUG: bool = True
+DEBUG: bool = False
 EXPERT: bool = True
 
 EXPLORE_PROB: float = .03
 ATTITUDE_TOWARDS_NOVEL_TAGS: float = 1.0
 PORT: int = 2348
-MAX_WORKERS: int = 64
+MAX_WORKERS: int = 32
 
 START_BATCH: int = 2000
 BATCH_SIZE: int = 256

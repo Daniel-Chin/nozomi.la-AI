@@ -110,4 +110,8 @@ const onClick = (response) => {
   if (response === RES_SAVE) {
     alert('Artists: \n' + artist_str);
   }
+  const artistsUl = document.getElementById('artists-name');
+  while (artistsUl.firstChild) {
+    artistsUl.removeChild(artistsUl.firstChild);
+  }
 };

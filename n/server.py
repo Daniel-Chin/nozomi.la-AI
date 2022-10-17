@@ -40,6 +40,8 @@ class MyOneServer(OneServer):
         respond(self.socket, poolItem.image)
       self.parent.imagePool.consume(callback)
     elif request.target.split('?')[0] == '/response':
+      if DEBUG:
+        print('/response')
       params = request.target.split('?')[1].split('&')
       doc_id = params[0].lstrip('doc_id=')
       response = params[1].lstrip('response=')
@@ -47,12 +49,19 @@ class MyOneServer(OneServer):
       doc = poolItem.doc
       assert doc_id == doc.id
       respond(self.socket, b'ok')
+      self.socket.close() # Avoid browser re-using this connection
       self.recordResponse(response, doc, poolItem.image)
+      if DEBUG:
+        print('todo')
       todo()
+      if DEBUG:
+        print('after todo')
+      return False
     elif request.target in ['/favicon.ico']:
-      pass
+      respond(self.socket, b'no icon sorry')
     else:
       print('Unknown request:', request.target)
+    return True
   
   def recordResponse(self, response: str, doc: Doc, image: bytes):
     if self.parent.db.doesDocExist(doc.id):
@@ -68,14 +77,18 @@ class MyOneServer(OneServer):
     if response == RES_SAVE:
       Thread(target=self.parent.db.saveImg, args=[
         doc, [image], 
-      ]).start()
+      ], name='saveImg').start()
 
 class MyServer(Server):
   def __init__(
     self, imagePool: ImagePool, db: Database, 
     my_OneServer=..., name='', port=80, listen=1, accept_timeout=0.5, 
+    max_connections=4*32, 
   ):
-    super().__init__(my_OneServer, name, port, listen, accept_timeout)
+    super().__init__(
+      my_OneServer, name, port, listen, accept_timeout, 
+      max_connections, 
+    )
     self.imagePool = imagePool
     self.db = db
 
