@@ -176,14 +176,14 @@ class Server(Thread):
     `close()`
     '''
     def __init__(self, my_OneServer = OneServer, port = 80, 
-                 listen = 1, accept_timeout = .5, name=''):
+                 listen = 1, accept_timeout = .5):
         # Pass in your subclassed OneServer
         Thread.__init__(self)
         self.queue = Queue()
         self.OneServer = my_OneServer
         self.listen = listen
         self.socket = Socket()
-        self.socket.bind((name, port))
+        self.socket.bind(('', port))
         self.socket.settimeout(accept_timeout)
         self._go_on = Safe(True)
         self.oneServers = []
