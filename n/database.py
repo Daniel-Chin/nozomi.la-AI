@@ -56,14 +56,14 @@ class Database:
   def saveDoc(self, doc: Doc):
     self._docs[doc.id] = doc
 
-  def loadDoc(self, doc_id):
+  def loadDoc(self, doc_id) -> Doc:
     return self._docs[doc_id]
 
   def saveTagInfo(self, tagInfo: TagInfo):
     with self.lock:
       self._tagInfos[tagInfo.tag.name] = tagInfo
 
-  def loadTagInfo(self, name: str):
+  def loadTagInfo(self, name: str) -> TagInfo:
     with self.lock:
       return self._tagInfos[name]
 

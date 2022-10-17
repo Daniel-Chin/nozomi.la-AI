@@ -12,23 +12,22 @@ class PoolItem:
     mode: str
 
 class ImagePool:
-    def __init__(
-        self, size: int, request: Callable[[], Future], 
-    ) -> None:
+    def __init__(self) -> None:
         self.n_idle = 0
         self.n_download = 0
         self.n_ready = 0
 
-        self.request = request
         self.lock = Lock()
         self.queue: List[PoolItem] = []
         self.waiter = None
+    
+    def activate(self, size: int, request: Callable[[], Future]):
+        self.request = request
         for _ in range(size):
             self._request()
     
     def _request(self):
-        future = self.request()
-        future.add_done_callback(self.receive)
+        self.request()
 
         with self.lock:
             self.n_idle -= 1

@@ -24,8 +24,5 @@ class TagInfo:
     self.tag: Tag = tag
     self.responses: Dict[str, int] = {}
   
-  def sum(self):
-    return sum([self.responses.get(x, 0) for x in ALL_RESPONSES])
-
   def __repr__(self):
     return f'<tagInfo {self.tag} {self.responses}>'

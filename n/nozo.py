@@ -1,6 +1,6 @@
-from time import time, sleep
+from time import time
+from typing import List
 from requests import get, Response
-from functools import lru_cache
 from threading import Lock, Thread
 import concurrent.futures as futures
 from json import loads
@@ -9,7 +9,6 @@ from json.decoder import JSONDecodeError
 from requests_futures.sessions import FuturesSession
 
 from parameters import *
-from doc import Doc
 from imagePool import ImagePool, PoolItem
 
 MASTER_URL = 'https://n.nozomi.la/index.nozomi'
@@ -59,29 +58,35 @@ def urlJSON(doc_id):
   b = doc_id[-3:-1]
   return f'https://j.nozomi.la/post/{a}/{b}/{doc_id}.json'
 
-@lru_cache(maxsize = BATCH_SIZE * 3)
-def getJSON(doc_id: str):
-  url = urlJSON(doc_id)
-  r = get(url, headers = {
-    'Host': 'j.nozomi.la',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
-    'Accept': '*/*',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Referer': 'https://nozomi.la/',
-    'Origin': 'https://nozomi.la',
-    'Connection': 'keep-alive',
-    'TE': 'Trailers',
-  })
-  if r.status_code == 404:
-    print(f'{doc_id} has 404 not found')
-    return None
-  try:
-    return loads(r.text)
-  except JSONDecodeError as e:
-    print('json not well formed.')
-    print(r.text)
-    raise e
+def getJSONs(doc_ids: List[str], session: FuturesSession):
+  fs: List[futures.Future[Response]] = []
+  for doc_id in doc_ids:
+    url = urlJSON(doc_id)
+    fs.append(session.get(url, headers = {
+      'Host': 'j.nozomi.la',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
+      'Accept': '*/*',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Referer': 'https://nozomi.la/',
+      'Origin': 'https://nozomi.la',
+      'Connection': 'keep-alive',
+      'TE': 'Trailers',
+    }))
+  jsons = []
+  futures.wait(fs)
+  for future in fs:
+    response = future.result()
+    if response.status_code == 404:
+      print(f'{doc_id} has 404 not found')
+      jsons.append(None)
+    try:
+      jsons.append(loads(response.text))
+    except JSONDecodeError as e:
+      print('json not well formed.')
+      print(response.text)
+      raise e
+  return jsons
 
 class ImageRequester:
   def __init__(
@@ -123,8 +128,6 @@ class ImageRequester:
     future.add_done_callback(
       lambda x : self.onReceive(x, poolItem)
     )
-    # g.printJobs()
-    # self.todo()
   
   def onReceive(
     self, future: futures.Future[Response], 

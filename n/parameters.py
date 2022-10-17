@@ -1,3 +1,5 @@
+from typing import Optional
+
 DEBUG: bool = False
 EXPERT: bool = True
 
@@ -11,7 +13,7 @@ PORT: int = 2348
 # JOB_POOL_THROTTLE: float = 3.0
 # JSON_MAX: int = 256
 # VIEW_RATIO: float = .003
-# FILTER: str = ''
+# FILTER: Optional[str] = None
 
 START_BATCH: int = 0
 BATCH_SIZE: int = 64
@@ -21,7 +23,7 @@ JOB_POOL_THROTTLE: float = 2.0
 JSON_MAX: int = 64
 # JSON_MAX: int = 256
 VIEW_RATIO: float = .1
-FILTER: str = '''
+FILTER: Optional[str] = '''
 '''.strip()
 
 # Below are default values. 
@@ -39,4 +41,4 @@ FILTER: str = '''
 # JSON_MAX: int = 16
 # PORT: int = 2348
 
-# FILTER: str = ''
+# FILTER: Optional[str] = None

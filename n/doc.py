@@ -51,3 +51,11 @@ class Doc:
 
   def __repr__(self):
     return f"<doc {self.id} {self.response} {'saved' if self.local_filenames else ''}>"
+  
+  def __hash__(self) -> int:
+    return hash(self.id)
+  
+  def __eq__(self, __o: object) -> bool:
+    if isinstance(__o, __class__):
+      return self.id == __o.id
+    return False
