@@ -3,8 +3,7 @@ An update in Mar. 2022 was not backward-compatible.
 Run this script to upgrade your database into the new format.  
 '''
 
-import ai
-import legacy.database as oldDb
+import legacy.mar2022.database as oldDb
 from database import database
 from jdt import jdtIter
 
@@ -27,4 +26,4 @@ def main():
         # overall = oldDb.loadOverall()
         # database.saveOverall(overall)
 
-main()
+# main()

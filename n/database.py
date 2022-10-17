@@ -19,10 +19,11 @@ IMGS = 'imgs'
 OVERALL = 'overall.pickle'
 
 class Database:
-  def __init__(self) -> None:
+  def __init__(self, exitLock: Lock) -> None:
     self.lock = Lock()
     self.accLock = Lock()
     self.exclusive = Exclusive('exclusive')
+    self.exitLock = exitLock
   
   @contextmanager
   def context(self):
@@ -30,19 +31,37 @@ class Database:
          shelve.open(DOCS) as self._docs, \
          shelve.open(TAGS) as self._tagInfos:
       os.makedirs(IMGS, exist_ok=True)
+      try:
+        yield self
+      finally:
+        self.lock.acquire(timeout=1)
+    self.lock.release()
+  
+  @contextmanager
+  def okAfterClose(self):
+    try:
       yield self
+    except ValueError as e:
+      if e.args[0] == 'invalid operation on closed shelf':
+        assert not self.exitLock.locked
+      else:
+        raise e
   
   def listAllDocs(self):
-    return self._docs.keys()
+    with self.okAfterClose():
+      return self._docs.keys()
 
   def listAllTagInfos(self):
-    return self._tagInfos.keys()
+    with self.okAfterClose():
+      return self._tagInfos.keys()
   
   def listAllImgs(self):
-    return os.listdir(IMGS)
+    with self.okAfterClose():
+      return os.listdir(IMGS)
 
   def doesDocExist(self, doc_id: str):
-    return doc_id in self._docs
+    with self.okAfterClose():
+      return doc_id in self._docs
 
   def saveImg(self, doc: Doc, imgs: List[bytes]):
     # also writes `doc.local_filenames`
@@ -54,18 +73,23 @@ class Database:
       doc.local_filenames.append(filename)
 
   def saveDoc(self, doc: Doc):
-    self._docs[doc.id] = doc
+    with self.okAfterClose():
+      with self.lock:
+        self._docs[doc.id] = doc
 
   def loadDoc(self, doc_id) -> Doc:
-    return self._docs[doc_id]
+    with self.okAfterClose():
+      return self._docs[doc_id]
 
   def saveTagInfo(self, tagInfo: TagInfo):
-    with self.lock:
-      self._tagInfos[tagInfo.tag.name] = tagInfo
+    with self.okAfterClose():
+      with self.lock:
+        self._tagInfos[tagInfo.tag.name] = tagInfo
 
   def loadTagInfo(self, name: str) -> TagInfo:
-    with self.lock:
-      return self._tagInfos[name]
+    with self.okAfterClose():
+      with self.lock:
+        return self._tagInfos[name]
 
   def accTagInfo(self, tag: Tag, response: str):
     with self.accLock:

@@ -1,5 +1,5 @@
 import os
-from threading import Lock
+from threading import Lock, Thread
 
 import webbrowser
 from requests_futures.sessions import FuturesSession
@@ -24,15 +24,21 @@ def main():
   exitLock = Lock()
   exitLock.acquire()
   imagePool = ImagePool()
-  with Database().context() as db:
+  with Database(exitLock).context() as db:
     server = startServer(imagePool, db)
-    with FuturesSession(max_workers=JOB_POOL_SIZE) as session:
+    with FuturesSession(max_workers=MAX_WORKERS) as session:
       imageRequester = ImageRequester(session, exitLock, imagePool)
-      hIL = ai.HumanInLoop(session, imageRequester, db)
-      imagePool.activate(JOB_POOL_SIZE, lambda : next(hIL))
+      hIL = ai.HumanInLoop(
+        session, imageRequester, db, exitLock, 
+      )
+      def activate():
+        print('Activating...')
+        imagePool.activate(JOB_POOL_SIZE, lambda : next(hIL))
+      Thread(target=activate).start()
       try:
         while True:
-          if input('Enter "q" to quit.').lower() == 'q':
+          print('Enter "q" to quit.')
+          if input().lower() == 'q':
             break
       finally:
         exitLock.release()

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from time import time
 from typing import List
 from requests import get, Response
@@ -62,24 +64,28 @@ def getJSONs(doc_ids: List[str], session: FuturesSession):
   fs: List[futures.Future[Response]] = []
   for doc_id in doc_ids:
     url = urlJSON(doc_id)
-    fs.append(session.get(url, headers = {
-      'Host': 'j.nozomi.la',
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
-      'Accept': '*/*',
-      'Accept-Language': 'en-US,en;q=0.5',
-      'Accept-Encoding': 'gzip, deflate, br',
-      'Referer': 'https://nozomi.la/',
-      'Origin': 'https://nozomi.la',
-      'Connection': 'keep-alive',
-      'TE': 'Trailers',
-    }))
+    try:
+      fs.append(session.get(url, headers = {
+        'Host': 'j.nozomi.la',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Referer': 'https://nozomi.la/',
+        'Origin': 'https://nozomi.la',
+        'Connection': 'keep-alive',
+        'TE': 'Trailers',
+      }))
+    except RuntimeError as e:
+      print('Warning:', e)
   jsons = []
   futures.wait(fs)
   for future in fs:
     response = future.result()
-    if response.status_code == 404:
+    if '404 Not Found' in response.text or response.status_code == 404:
       print(f'{doc_id} has 404 not found')
       jsons.append(None)
+      continue
     try:
       jsons.append(loads(response.text))
     except JSONDecodeError as e:
@@ -107,7 +113,7 @@ class ImageRequester:
       self.last_request = my_time
     dt = max(0, my_time - time())
     if dt == 0:
-      self._do(url, 0)
+      self._do(url, 0, poolItem)
     else:
       Thread(target=self._do, args=[url, dt, poolItem]).start()
   

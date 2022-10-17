@@ -1,30 +1,28 @@
 from typing import Optional
 
-DEBUG: bool = False
+DEBUG: bool = True
 EXPERT: bool = True
 
 EXPLORE_PROB: float = .03
 ATTITUDE_TOWARDS_NOVEL_TAGS: float = 1.0
 PORT: int = 2348
+MAX_WORKERS: int = 64
 
-# START_EPOCH: int = 2000
-# BATCH_SIZE: int = 256
-# JOB_POOL_SIZE: int = 16
-# JOB_POOL_THROTTLE: float = 3.0
-# JSON_MAX: int = 256
-# VIEW_RATIO: float = .003
-# FILTER: Optional[str] = None
+START_BATCH: int = 2000
+BATCH_SIZE: int = 256
+JOB_POOL_SIZE: int = 16
+JOB_POOL_THROTTLE: float = 3.0
+VIEW_RATIO: float = .003
+FILTER: Optional[str] = None
 
-START_BATCH: int = 0
-BATCH_SIZE: int = 64
-# BATCH_SIZE: int = 256
-JOB_POOL_SIZE: int = 6
-JOB_POOL_THROTTLE: float = 2.0
-JSON_MAX: int = 64
-# JSON_MAX: int = 256
-VIEW_RATIO: float = .1
-FILTER: Optional[str] = '''
-'''.strip()
+# START_BATCH: int = 0
+# BATCH_SIZE: int = 64
+# # BATCH_SIZE: int = 256
+# JOB_POOL_SIZE: int = 6
+# JOB_POOL_THROTTLE: float = 2.0
+# VIEW_RATIO: float = .1
+# FILTER: Optional[str] = '''
+# '''.strip()
 
 # Below are default values. 
 # DEBUG: bool = False
@@ -38,7 +36,6 @@ FILTER: Optional[str] = '''
 
 # JOB_POOL_SIZE: int = 4
 # JOB_POOL_THROTTLE: float = 1.0
-# JSON_MAX: int = 16
 # PORT: int = 2348
 
 # FILTER: Optional[str] = None

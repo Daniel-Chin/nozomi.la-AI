@@ -1,10 +1,12 @@
 import random
-from typing import Any, Dict, List, Tuple
+from threading import Lock
+from typing import Any, Dict, List
 
 from shared import *
 from parameters import *
 from imagePool import PoolItem
 from doc import Doc, DocNotSuitable
+from tag import TagInfo
 from database import Database
 from nozo import ImageRequester, getJSONs, askMaster, PageOutOfRange
 
@@ -53,7 +55,7 @@ def predict(doc: Doc, db: Database):
     try:
       tagInfo = db.loadTagInfo(tag.name)
     except KeyError:
-      db.saveTagInfo(tag)
+      db.saveTagInfo(TagInfo(tag))
       tagInfo = db.loadTagInfo(tag.name)
     goodness = score(tagInfo.responses) - score_baseline
     goodness *= WEIGHT.get(tag.type, 1)
@@ -65,11 +67,11 @@ def predict(doc: Doc, db: Database):
         # maybe turning into non-novel bad tags. 
         goodness *= _sum / 5
     result += goodness
-  if DEBUG:
-    print('predict', doc.id, result)
+  # if DEBUG:
+  #   print('predict', doc.id, result)
   return result
 
-def sample(json_lookup: Dict[str, Any], db):
+def sample(json_lookup: Dict[str, Any], db, exitLock: Lock):
   docs: List[Doc] = []
   for json in json_lookup.values():
     try:
@@ -85,23 +87,28 @@ def sample(json_lookup: Dict[str, Any], db):
     return doc, EXPLORE
   else:
     # Exploit
-    try:
-      y_hats = [(x, predict(x, db)) for x in docs]
-    except EOFError as e:
-      print(e)
-      print(
-        '\n'
-        'Database may be corrupted. Delete all '
-        'tag files and run `comileTags.py`. '
-        '\n'
-      )
-      raise ValueError
+    y_hats = []
+    for doc in docs:
+      if not exitLock.locked: return
+      try:
+        y_hat = predict(doc, db)
+      except EOFError as e:
+        print(e)
+        print(
+          '\n'
+          'Database may be corrupted. Delete all '
+          'tag files and run `comileTags.py`. '
+          '\n'
+        )
+        raise ValueError
+      y_hats.append((doc, y_hat))
     highscore = max([y for _, y in y_hats])
     results = [x for x, y in y_hats if y == highscore]
     return results[0], EXPLOIT
 
 def HumanInLoop(
   session, imageRequester: ImageRequester, db: Database, 
+  exitLock: Lock, 
 ):
   blacklist = parseBlacklist(db)
   print('blacklist is', blacklist)
@@ -115,14 +122,21 @@ def HumanInLoop(
     if batch_i not in traversed:
       traversed.add(batch_i)
       print('epoch', batch_i)
+      if not exitLock.locked: return
       try:
         pool = askMaster(batch_i * BATCH_SIZE, (batch_i + 1) * BATCH_SIZE)
       except PageOutOfRange:
         print('There is no more! Enter "q" to quit...')
         return
+      if DEBUG:
+        print('asked master')
       population = [x for x in pool if not db.doesDocExist(x)]
       json_lookup = {}
-      for i, json in enumerate(getJSONs(population, session)):
+      if not exitLock.locked: return
+      jsons = getJSONs(population, session)
+      if DEBUG:
+        print('got jsons')
+      for i, json in enumerate(jsons):
         if json is not None:
           json_lookup[population[i]] = json
       if not json_lookup:
@@ -130,14 +144,19 @@ def HumanInLoop(
         return
       while len(json_lookup) >= len(pool) * (1 - VIEW_RATIO):
         has_stuff = True
+        if not exitLock.locked: return
         try:
-          doc, mode = sample(json_lookup, db)
+          doc, mode = sample(json_lookup, db, exitLock)
         except EOFError:
           break
+        if DEBUG:
+          print('sampled')
         del json_lookup[doc.id]
         if isBlacklisted(doc, blacklist):
           continue
+        if not exitLock.locked: return
         yield imageRequester.sched(PoolItem(doc, None, mode))
+        print('after yield')
     if not FILTER:
       if has_stuff:
         patient = 1

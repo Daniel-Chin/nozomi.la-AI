@@ -21,7 +21,10 @@ class ImagePool:
         self.queue: List[PoolItem] = []
         self.waiter = None
     
-    def activate(self, size: int, request: Callable[[], Future]):
+    def activate(
+        self, size: int, request: Callable[[], Future], 
+    ):
+        self.n_idle = size
         self.request = request
         for _ in range(size):
             self._request()
@@ -45,7 +48,7 @@ class ImagePool:
                 self.waiter(item)
                 self.waiter = None
     
-    def consume(self, callback: Callable[[PoolItem]]):
+    def consume(self, callback: Callable[[PoolItem], None]):
         with self.lock:
             if self.queue:
                 item = self.queue[0]

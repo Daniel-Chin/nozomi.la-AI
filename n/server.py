@@ -73,9 +73,9 @@ class MyOneServer(OneServer):
 class MyServer(Server):
   def __init__(
     self, imagePool: ImagePool, db: Database, 
-    my_OneServer=..., port=80, listen=1, accept_timeout=0.5, 
+    my_OneServer=..., name='', port=80, listen=1, accept_timeout=0.5, 
   ):
-    super().__init__(my_OneServer, port, listen, accept_timeout)
+    super().__init__(my_OneServer, name, port, listen, accept_timeout)
     self.imagePool = imagePool
     self.db = db
 
@@ -86,10 +86,16 @@ class MyServer(Server):
     elif addr[0] != trusted_ip:
       print('SOMEONE IS ATTACKING!', addr)
       self.close()
+  
+  def handleQueue(self, intent):
+    return super().handleQueue(intent)
+  
+  def interval(self):
+    return super().interval()
 
 def startServer(imagePool, db):
   server = MyServer(
-    imagePool, db, MyOneServer, PORT, name='localhost', 
+    imagePool, db, MyOneServer, 'localhost', PORT, 
   )
   server.start()
   return server
