@@ -3,15 +3,18 @@ Serves through a (super) simplified version of http protocol.
 Warning: Running this may expose your computer to attacks. 
 Don't run this. 
 '''
+from abc import ABC, abstractmethod
 from threading import Thread
 from queue import Queue, Empty
 from socket import socket as Socket, timeout, gethostname, gethostbyname
 import logging
+from typing import List
 from mythread import Safe
 
-__all__ = ['BadRequest', 'ClientShutdown', 'Request', 
-           'OneServer', 'Server', 'Intent', 'log', 'logging', 
-           'respond', 'myLogger',
+__all__ = [
+    'BadRequest', 'ClientShutdown', 'Request', 
+    'OneServer', 'Server', 'Intent', 'log', 'logging', 
+    'respond', 'myLogger',
 ]
 
 class BadRequest(BaseException):
@@ -64,7 +67,7 @@ class Request:
         else:
             return self.command + ' ' + self.target
 
-def parseHead(text):
+def parseHead(text: str):
     whats_bad = ''
     try:
         lines = text.split('\r\n')
@@ -77,18 +80,18 @@ def parseHead(text):
             value = value.strip(' ')
             request.add(kw, value)
         return request
-    except Exception as e:
+    except Exception:
         log('Bad line:', whats_bad, level = logging.ERROR)
         raise BadRequest
 
-def respond(socket, data):
+def respond(socket: Socket, data: bytes):
     response = '''HTTP/1.1 200 OK\r
 Content-Length: %d\r
 Content-Type: text/html\r\n\r\n''' % len(data)
     socket.send(response.encode())
     socket.send(data)
 
-class OneServer(Thread):
+class OneServer(Thread, ABC):
     '''
     Subclass this class and override: 
         handle(request) where request is a Request object
@@ -97,7 +100,7 @@ class OneServer(Thread):
     '''
     request_filter = []
     
-    def __init__(self, addr, socket, parentQueue):
+    def __init__(self, addr, socket: Socket, parentQueue: Queue):
         '''
         You shouldn't override this. OneServer doesn't need any 
         runtime state. Keep-alive should not be abused. 
@@ -119,16 +122,18 @@ class OneServer(Thread):
             if len(data) < 50:
                 log(self, data.decode())
     
+    @abstractmethod
     def handle(self, request):
         # Override this
         respond(self.socket, b'''<html>What a shame. 
 The programmer didn't override the request handler. </html>''')
+        raise NotImplemented
     
-    def __str__(self):
-        return self.addr.__str__()
+    def __repr__(self):
+        return repr(self.addr)
     
     def run(self):
-        log(self, 'service begin. ')
+        log(self, 'service begins. ')
         chunk = b''
         try:
             while self._go_on.get():
@@ -168,14 +173,15 @@ The programmer didn't override the request handler. </html>''')
             self.socket.close()
             log(self, 'Thread has stopped. ')
 
-class Server(Thread):
+class Server(Thread, ABC):
     '''
     Subclass this class and override: 
         handleQueue()
         interval()
+        onConnect()
     `close()`
     '''
-    def __init__(self, my_OneServer = OneServer, port = 80, 
+    def __init__(self, my_OneServer=OneServer, port = 80, 
                  listen = 1, accept_timeout = .5):
         # Pass in your subclassed OneServer
         Thread.__init__(self)
@@ -186,7 +192,7 @@ class Server(Thread):
         self.socket.bind(('', port))
         self.socket.settimeout(accept_timeout)
         self._go_on = Safe(True)
-        self.oneServers = []
+        self.oneServers: List[OneServer] = []
         self.max_connection = Safe(4 * 32)
         self.showing_max_waring = False
     
@@ -196,12 +202,14 @@ class Server(Thread):
     def getMaxConnection(self):
         return self.max_connection.get()
     
+    @abstractmethod
     def interval(self):
         '''
         Override this.
         '''
         pass
     
+    @abstractmethod
     def handleQueue(self, intent):
         '''
         Override this.
@@ -220,6 +228,7 @@ class Server(Thread):
                 self._go_on.value = False
             #self.join()    public method
     
+    @abstractmethod
     def onConnect(self, addr):
         pass    # to override.
     
