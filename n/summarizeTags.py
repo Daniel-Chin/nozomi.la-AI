@@ -3,41 +3,47 @@
 ARTIST_TOTAL_THRESHOLD = 0
 
 import csv
-from ai import score, ALL_RESPONSES
-from database import database
-from jdt import Jdt
+from threading import Lock
+from typing import List, Tuple
+from tqdm import tqdm
+
 from gt import printTable
 
+from shared import *
+from database import Database
+from ai import score
+from tag import TagInfo
+
 def main():
-  with database:
+  exitLock = Lock()
+  exitLock.acquire()
+  with Database(exitLock) as database:
     print('ls...')
     overall = database.loadOverall()
     baseline = score(overall)
-    tagInfos = []
-    la = database.listAllTags()
-    with Jdt(len(la), 'Evaluating...', UPP=8) as j:
-      for i in la:
-        j.acc()
-        try:
-          ti = database.loadTagInfo(i)
-        except KeyError as e:
-          print(e)
+    tagInfos: List[Tuple[TagInfo, float]] = []
+    la = database.listAllTagInfos()
+    for i in tqdm(la):
+      try:
+        ti = database.loadTagInfo(i)
+      except KeyError as e:
+        print(e)
+        continue
+      total = 0
+      for r in ALL_RESPONSES:
+        total += ti.responses.get(r, 0)
+      if ti.tag.type == 'artist':
+        if total < ARTIST_TOTAL_THRESHOLD:
           continue
-        total = 0
-        for r in ALL_RESPONSES:
-          total += ti.n_responses.get(r, 0)
-        if ti.type == 'artist':
-          if total < ARTIST_TOTAL_THRESHOLD:
-            continue
-        else:
-          if total < 10:
-            continue
-        try:
-          s = score(ti.n_responses) - baseline
-        except ZeroDivisionError:
-          s = 0
-        if abs(s) > 0.2:
-          tagInfos.append((ti, s))
+      else:
+        if total < 10:
+          continue
+      try:
+        s = score(ti.responses) - baseline
+      except ZeroDivisionError:
+        s = 0
+      if abs(s) > 0.2:
+        tagInfos.append((ti, s))
     print('Sorting...')
     tagInfos.sort(key=lambda x: x[1])
     print()
@@ -49,7 +55,7 @@ def main():
       c.writerow(header)
       for ti, s in tagInfos:
         c.writerow([
-          format(s, '+.1f'), str(ti.type), ti.display, ti.name, 
+          format(s, '+.1f'), str(ti.tag.type), ti.tag.display, ti.tag.name, 
         ])
     input('Press Enter to display...')
     with open(FILENAME, 'r', encoding='utf-8') as f:
