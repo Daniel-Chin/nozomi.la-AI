@@ -9,7 +9,7 @@ from requests import get, Response
 from json import loads
 from json.decoder import JSONDecodeError
 from functools import lru_cache
-from ai import POOL_SIZE, DEBUG
+from ai import BATCH_SIZE, DEBUG
 from threading import Thread, Lock
 import concurrent.futures as futures
 from requests_futures.sessions import FuturesSession
@@ -46,7 +46,7 @@ def urlJSON(doc_id):
   b = doc_id[-3:-1]
   return f'https://j.nozomi.la/post/{a}/{b}/{doc_id}.json'
 
-@lru_cache(maxsize=POOL_SIZE)
+@lru_cache(maxsize=BATCH_SIZE)
 def getJSON(doc_id):
   url = urlJSON(doc_id)
   r = get(url, headers = {

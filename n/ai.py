@@ -1,13 +1,5 @@
-from parameters import DEBUG, START_EPOCH, EXPLORE_PROB, POOL_SIZE, JSON_MAX, VIEW_RATIO, ATTITUDE_TOWARDS_NOVEL_TAGS, FILTER
-
-RES_NEGATIVE = 'RES_NEGATIVE'
-RES_FINE = 'RES_FINE'
-RES_BETTER = 'RES_BETTER'
-RES_MORE = 'RES_MORE'
-RES_WOW = 'RES_WOW'
-RES_SAVE = 'RES_SAVE'
-
-ALL_RESPONSES = [RES_NEGATIVE, RES_FINE, RES_BETTER, RES_MORE, RES_WOW, RES_SAVE]
+from shared import *
+from parameters import DEBUG, START_BATCH, EXPLORE_PROB, BATCH_SIZE, JSON_MAX, VIEW_RATIO, ATTITUDE_TOWARDS_NOVEL_TAGS, FILTER
 
 SCORE = {
   RES_NEGATIVE: -2,
@@ -27,20 +19,6 @@ EXPLOIT = 'EXPLOIT'
 EXPLORE = 'EXPLORE'
 
 blacklist = []
-
-def recordResponse(response, doc, img):
-  if database.docExists(doc.id):
-    raise Exception('Error 2049284234')
-  doc.response = response
-  database.saveDoc(doc)
-  database.accOverall(response)
-  for tag in doc.tags:
-    database.accTagInfo(tag, response)
-    if DEBUG:
-      print(database.loadTagInfo(tag.name))
-  print(doc)
-  if response == RES_SAVE:
-    database.saveImg(doc, [img])
 
 from doc import Doc, Tag, DocNotSuitable
 from database import database
@@ -120,7 +98,7 @@ def sample(population):
 def roll(session):
   print('blacklist is', blacklist)
   print('If at least one of them show up in a doc, the doc will not show up, not even in EXPLORE mode.')
-  epoch = START_EPOCH
+  epoch = START_BATCH
   epoch_step = 1
   patient = 1
   traversed = {}
@@ -130,7 +108,7 @@ def roll(session):
       print('epoch', epoch)
       traversed[epoch] = True
       try:
-        pool = askMaster(epoch * POOL_SIZE, (epoch + 1) * POOL_SIZE)
+        pool = askMaster(epoch * BATCH_SIZE, (epoch + 1) * BATCH_SIZE)
       except PageOutOfRange:
         print('There is no more! Enter to quit...')
         input()
@@ -204,5 +182,23 @@ def isBlacklisted(doc):
   except DocNotSuitable:
     pass
   return False
+
+def parseBlacklist():
+  blacklist = []
+  try:
+    with open('blacklist.txt', 'r', encoding='utf-8') as f:
+      for line in f:
+        line = line.strip()
+        if line:
+          try:
+            database.loadTagInfo(line)
+          except KeyError:
+            raise ValueError(f'"{line}" is not a valid tag name, or it is not cached yet.')
+          else:
+            blacklist.append(line)
+  except FileNotFoundError:
+    with open('blacklist.txt', 'w') as f:
+      f.write('\n')
+  setBlackList(blacklist)
 
 from server import g, Job

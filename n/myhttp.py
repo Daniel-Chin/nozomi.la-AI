@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 '''
 Serves through a (super) simplified version of http protocol. 
 Warning: Running this may expose your computer to attacks. 
@@ -48,7 +50,7 @@ class DeregisterOneServer(Intent):
         self.oneServer = oneServer
 
 class Request:
-    def __init__(self, command, target, http_version):
+    def __init__(self, command: str, target: str, http_version):
         self.command = command
         self.target = target
         self.http_version = http_version
@@ -100,7 +102,7 @@ class OneServer(Thread, ABC):
     '''
     request_filter = []
     
-    def __init__(self, addr, socket: Socket, parentQueue: Queue):
+    def __init__(self, addr, socket: Socket, parent: Server):
         '''
         You shouldn't override this. OneServer doesn't need any 
         runtime state. Keep-alive should not be abused. 
@@ -109,7 +111,8 @@ class OneServer(Thread, ABC):
         self.addr = addr
         self.socket = socket  
         socket.settimeout(.4)
-        self.parentQueue = parentQueue
+        self.parent = parent
+        self.parentQueue = parent.queue
         self.queue = Queue()
         self._go_on = Safe(True)
     

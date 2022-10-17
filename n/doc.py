@@ -1,6 +1,6 @@
-from collections import namedtuple
+from typing import List, Optional
 
-Tag = namedtuple('Tag', ['name', 'display', 'type'])
+from tag import Tag
 
 class DocNotSuitable(Exception): pass
 
@@ -13,37 +13,38 @@ class Doc:
     'local_filenames',
   ]
 
-  def __init__(self, json = None):
-    self.response = None
-    self.tags = []
-    self.img_urls = []
-    self.local_filenames = []
+  def __init__(self, json: dict = None):
+    self.response: Optional[str] = None
+    self.tags: List[Tag] = []
+    self.img_urls: List[str] = []
+    self.local_filenames: List[str] = []
     if json is not None:
       self.parse(json)
 
-  def parse(self, json):
-    # Must have >=1 tags. Must not have video. 
+  def parse(self, json: dict):
     for tag_type in ('general', 'character', 'artist'):
-      for i in json.get(tag_type, []):
-        self.tags.append(Tag(i['tag'], i['tagname_display'], i['tagtype']))
+      for x in json.get(tag_type, []):
+        self.tags.append(Tag(
+          x['tag'], x['tagname_display'], x['tagtype'], 
+        ))
     if not self.tags:
-      raise DocNotSuitable
-    for i in json['imageurls']:
-      if not i['is_video']:
-        hash = i['dataid']
-        ext = i['type']
+      raise DocNotSuitable('Doc not tagged.')
+    for x in json['imageurls']:
+      if not x['is_video']: # cannot be video. 
+        dataid = x['dataid']
+        ext = x['type']
         self.img_urls.append(f'''https://i.nozomi.la/{
-          hash[-1]
+          dataid[-1]
         }/{
-          hash[-3:-1]
-        }/{hash}.{ext}''')
+          dataid[-3:-1]
+        }/{dataid}.{ext}''')
     if not self.img_urls:
-      raise DocNotSuitable
+      raise DocNotSuitable('Doc has no non-video materials.')
     self.id = str(json['postid'])
-    self.img_type = json['type']
-    self.width = json['width']
-    self.height = json['height']
-    self.date = json['date']
+    self.img_type: str = json['type']
+    self.width: int = json['width']
+    self.height: int = json['height']
+    self.date: str = json['date']
   
   def getArtists(self):
     return [x.display for x in self.tags if x.type == 'artist']
