@@ -1,31 +1,44 @@
-MASTER_URL = 'https://n.nozomi.la/index.nozomi'
-TAG_URL = 'https://n.nozomi.la/nozomi/%s.nozomi'
-
-from parameters import FILTER, JOB_POOL_THROTTLE
-if FILTER:
-  MASTER_URL = TAG_URL % FILTER
 from time import time, sleep
 from requests import get, Response
+from functools import lru_cache
+from threading import Lock, Thread
+import concurrent.futures as futures
 from json import loads
 from json.decoder import JSONDecodeError
-from functools import lru_cache
-from ai import BATCH_SIZE, DEBUG
-from threading import Thread, Lock
-import concurrent.futures as futures
+
 from requests_futures.sessions import FuturesSession
-from server import g
+
+from parameters import *
+from doc import Doc
+from imagePool import ImagePool, PoolItem
+
+MASTER_URL = 'https://n.nozomi.la/index.nozomi'
+TAG_URL = 'https://n.nozomi.la/nozomi/%s.nozomi'
+IMAGE_HEADERS = {
+  'Host': 'i.nozomi.la',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
+  'Accept': 'image/webp,*/*',
+  'Accept-Language': 'en-US,en;q=0.5',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Referer': 'https://nozomi.la/',
+  'Connection': 'keep-alive',
+}
 
 class PageOutOfRange(Exception): pass
 
-def decode_nozomi(n):
+def decodeNozomi(n, /):
   try:
     for i in range(0, len(n), 4):
       yield str((n[i] << 24) + (n[i+1] << 16) + (n[i+2] << 8) + n[i+3])
   except IndexError:
     raise PageOutOfRange()
 
-def askMaster(start, end):
-  r = get(MASTER_URL, headers={
+def askMaster(start: int, end: int):
+  if FILTER:
+    url = TAG_URL % FILTER
+  else:
+    url = MASTER_URL
+  r = get(url, headers={
     'Host': 'n.nozomi.la',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
     'Accept': '*/*',
@@ -38,7 +51,7 @@ def askMaster(start, end):
     'TE': 'Trailers',
   })
   
-  post_ids = list(decode_nozomi(r.content))
+  post_ids = list(decodeNozomi(r.content))
   return post_ids
 
 def urlJSON(doc_id):
@@ -46,8 +59,8 @@ def urlJSON(doc_id):
   b = doc_id[-3:-1]
   return f'https://j.nozomi.la/post/{a}/{b}/{doc_id}.json'
 
-@lru_cache(maxsize=BATCH_SIZE)
-def getJSON(doc_id):
+@lru_cache(maxsize = BATCH_SIZE * 3)
+def getJSON(doc_id: str):
   url = urlJSON(doc_id)
   r = get(url, headers = {
     'Host': 'j.nozomi.la',
@@ -60,87 +73,65 @@ def getJSON(doc_id):
     'Connection': 'keep-alive',
     'TE': 'Trailers',
   })
-  if '404 Not Found' in r.text:
+  if r.status_code == 404:
     print(f'{doc_id} has 404 not found')
     return None
   try:
     return loads(r.text)
   except JSONDecodeError as e:
-    print('json not formatted.')
+    print('json not well formed.')
     print(r.text)
     raise e
 
-def imageHeaders():
-  return {
-    'Host': 'i.nozomi.la',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
-    'Accept': 'image/webp,*/*',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Referer': 'https://nozomi.la/',
-    'Connection': 'keep-alive',
-  }
-
-class ImageWorker(Thread):
-  last_request = time()
-  last_request_lock = Lock()
-
-  def __init__(self, url, session: FuturesSession):
-    super().__init__()
-    self.url = url
+class ImageRequester:
+  def __init__(
+    self, session: FuturesSession, exitLock: Lock, 
+    imagePool: ImagePool, 
+  ) -> None:
     self.session = session
+    self.exitLock = exitLock
+    self.imagePool = imagePool
+
+    self.last_request = time()
     self.lock = Lock()
-    self.result = None
-    self.go_on = True
-  
-  def close(self):
-    self.go_on = False
-  
-  def sleep(self, t):
-    while True:
-      if not self.go_on:
-        return
-      if t < .5:
-        sleep(t)
-        break
-      else:
-        sleep(.5)
-        t -= .5
-  
-  def run(self):
-    with __class__.last_request_lock:
-      my_time = max(time(), __class__.last_request + JOB_POOL_THROTTLE)
-      __class__.last_request = my_time
-    self.sleep(max(0, my_time - time()))
-    if self.go_on:
-      if DEBUG:
-        print('going on...')
+
+  def sched(self, poolItem: PoolItem):
+    url = poolItem.doc.img_urls[0]
+    with self.lock:
+      my_time = max(time(), self.last_request + JOB_POOL_THROTTLE)
+      self.last_request = my_time
+    dt = max(0, my_time - time())
+    if dt == 0:
+      self._do(url, 0)
     else:
-      return
+      Thread(target=self._do, args=[url, dt, poolItem]).start()
+  
+  def _do(self, url: str, wait_time: float, poolItem):
+    if wait_time != 0:
+      if self.exitLock.acquire(timeout=wait_time):
+        self.exitLock.release()
+        return
     if DEBUG:
-      print('ImageWorker starts...')
+      print('Requesting image...')
     try:
       future: futures.Future = self.session.get(
-        self.url, headers=imageHeaders(), 
+        url, headers=IMAGE_HEADERS, 
       )
     except RuntimeError as e:
       print('warning:', e, *e.args)
       return
-    while True:
-      try:
-        response: Response = future.result(timeout=1)
-      except futures.TimeoutError:
-        if not self.go_on:
-          return
-      else:
-        break
-    with self.lock:
-      self.result = response.content
-    g.printJobs()
-    self.todo()
-    if DEBUG:
-      print('ImageWorker ends.')
+    future.add_done_callback(
+      lambda x : self.onReceive(x, poolItem)
+    )
+    # g.printJobs()
+    # self.todo()
   
-  def check(self):
-    with self.lock:
-      return self.result
+  def onReceive(
+    self, future: futures.Future[Response], 
+    poolItem: PoolItem, 
+  ):
+    if self.exitLock.acquire():
+      self.exitLock.release()
+      return
+    poolItem.image = future.result().content
+    self.imagePool.receive(poolItem)
