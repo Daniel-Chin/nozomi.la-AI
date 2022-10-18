@@ -121,7 +121,7 @@ def HumanInLoop(
     has_stuff = False
     if batch_i not in traversed:
       traversed.add(batch_i)
-      print('epoch', batch_i)
+      print('batch', batch_i)
       if not exitLock.locked: return
       try:
         pool = askMaster(batch_i * BATCH_SIZE, (batch_i + 1) * BATCH_SIZE)
