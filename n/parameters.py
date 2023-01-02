@@ -39,3 +39,5 @@ FILTER: Optional[str] = None
 # PORT: int = 2348
 
 # FILTER: Optional[str] = None
+
+assert VIEW_RATIO * BATCH_SIZE > 1
