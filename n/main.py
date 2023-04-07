@@ -54,6 +54,8 @@ def main():
 
 def openBrowser():
   myhttp.myLogger.verbose = False
+  if EXPERT:
+    return
   url = f'http://localhost:{PORT}/'
   if not EXPERT:
     url += 'welcome.html'
