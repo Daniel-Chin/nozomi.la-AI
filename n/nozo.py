@@ -16,7 +16,7 @@ from imagePool import ImagePool, PoolItem
 MASTER_URL = 'https://n.nozomi.la/index.nozomi'
 TAG_URL = 'https://n.nozomi.la/nozomi/%s.nozomi'
 IMAGE_HEADERS = {
-  'Host': 'i.nozomi.la',
+  'Host': 'w.nozomi.la',
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
   'Accept': 'image/webp,*/*',
   'Accept-Language': 'en-US,en;q=0.5',
@@ -113,6 +113,8 @@ class ImageRequester:
 
   def sched(self, poolItem: PoolItem):
     url = poolItem.doc.img_urls[0]
+    # doc_id = poolItem.doc.id
+    # print(f'{(doc_id, url) = }')
     with self.lock:
       my_time = max(time(), self.last_request + JOB_POOL_THROTTLE)
       self.last_request = my_time

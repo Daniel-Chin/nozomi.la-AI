@@ -33,11 +33,11 @@ class Doc:
       if not x['is_video']: # cannot be video. 
         dataid = x['dataid']
         ext = x['type']
-        self.img_urls.append(f'''https://i.nozomi.la/{
+        self.img_urls.append(f'''https://w.nozomi.la/{
           dataid[-1]
         }/{
           dataid[-3:-1]
-        }/{dataid}.{ext}''')
+        }/{dataid}.webp''')
     if not self.img_urls:
       raise DocNotSuitable('Doc has no non-video materials.')
     self.id = str(json['postid'])
