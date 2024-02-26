@@ -18,8 +18,7 @@ def main():
   dname = os.path.dirname(abspath)
   os.chdir(dname)
 
-  if not DEBUG:
-    openBrowser()
+  openBrowser()
   
   exitLock = Lock()
   exitLock.acquire()
@@ -57,8 +56,7 @@ def openBrowser():
   if EXPERT:
     return
   url = f'http://localhost:{PORT}/'
-  if not EXPERT:
-    url += 'welcome.html'
+  url += 'welcome.html'
   webbrowser.open(url)
 
 if __name__ == '__main__':
