@@ -46,6 +46,8 @@ class Doc:
       # if not x['is_video']: # cannot be video. 
         dataid = x['dataid']
         ext = x['type']
+        if ext == 'jpg':
+          ext = 'webp'
         self.img_urls.append(f'''https://{
           ext[0]
         }.nozomi.la/{
