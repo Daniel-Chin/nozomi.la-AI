@@ -1,6 +1,7 @@
 from typing import List, Optional
 import json
 
+from parameters import *
 from tag import Tag
 
 class DocNotSuitable(Exception): pass
@@ -33,8 +34,9 @@ class Doc:
     return result
 
   def parse(self, json_data: dict):
-    with open('./logs/last.json', 'w') as f:
-      json.dump(json_data, f, indent=2)
+    if DEBUG:
+      with open('./logs/last.json', 'w') as f:
+        json.dump(json_data, f, indent=2)
     for tag_type in ('general', 'character', 'artist'):
       for x in json_data.get(tag_type, []):
         self.tags.append(Tag(
