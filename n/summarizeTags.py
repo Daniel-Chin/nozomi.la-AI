@@ -45,7 +45,7 @@ def main():
       if abs(s) > 0.2:
         tagInfos.append((ti, s))
     print('Sorting...')
-    tagInfos.sort(key=lambda x: x[1])
+    tagInfos.sort(key=lambda x: x[1], reverse=True)
     print()
     FILENAME = 'tags_summary.csv'
     print(f'writing {FILENAME}...')
