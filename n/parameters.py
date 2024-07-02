@@ -3,16 +3,16 @@ from typing import Optional
 DEBUG: bool = False
 EXPERT: bool = True
 
-EXPLORE_PROB: float = .03
+EXPLORE_PROB: float = .05
 ATTITUDE_TOWARDS_NOVEL_TAGS: float = 1.0
 PORT: int = 2348
 MAX_WORKERS: int = 32
 
 START_BATCH: int = 2000
-BATCH_SIZE: int = 256
-JOB_POOL_SIZE: int = 16
-JOB_POOL_THROTTLE: float = 3.0
-VIEW_RATIO: float = .003
+BATCH_SIZE: int = 128
+JOB_POOL_SIZE: int = 8
+JOB_POOL_THROTTLE: float = 2.0
+VIEW_RATIO: float = .02
 FILTER: Optional[str] = None
 
 # START_BATCH: int = 0
