@@ -39,7 +39,7 @@ def main():
         for id in lacks:
           doc = [x for x in saves if x.id == id][0]
           print('Getting', doc.id, '...')
-          imgs = [getImage(x) for x in doc.img_urls]
+          imgs = [getImage(x) for x in doc.getImgUrls()]
           database.saveImg(doc, imgs)
         print('Complete.')
     p = input('Input path to download to: ')
@@ -47,7 +47,7 @@ def main():
     missing_fns = [x for x in fns if not path.exists(x[0])]
     print(f'There are {len(fns)} wow ones. {len(missing_fns)} are not on disk.')
     for fn, doc in tqdm(missing_fns):
-      img = getImage(doc.img_urls[0])
+      img = getImage(doc.getImgUrls()[0])
       with open(fn, 'wb') as f:
         f.write(img)
     input('Ok. Press enter to quit...')
