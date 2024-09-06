@@ -1,28 +1,36 @@
 from typing import Optional
+from math import ceil
 
 DEBUG: bool = False
-EXPERT: bool = True
+EXPERT: bool = False
 
-EXPLORE_PROB: float = .03
+EXPLORE_PROB: float = .05
 ATTITUDE_TOWARDS_NOVEL_TAGS: float = 1.0
 PORT: int = 2348
 MAX_WORKERS: int = 32
 
-START_BATCH: int = 2000
-BATCH_SIZE: int = 256
-JOB_POOL_SIZE: int = 16
-JOB_POOL_THROTTLE: float = 3.0
-VIEW_RATIO: float = .003
+# START_BATCH: int = 0
+START_BATCH: int = 300
+# START_BATCH: int = 2000
+# JOB_POOL_SIZE: int = 6
+JOB_POOL_SIZE: int = 8
+JOB_POOL_THROTTLE: float = 2.0
+VIEW_RATIO: float = .007
+BATCH_SIZE: int = ceil(6 / VIEW_RATIO / 64) * 64
 FILTER: Optional[str] = None
 
 # START_BATCH: int = 0
-# BATCH_SIZE: int = 64
+# # BATCH_SIZE: int = 64
 # # BATCH_SIZE: int = 256
-# JOB_POOL_SIZE: int = 6
+# JOB_POOL_SIZE: int = 8
 # JOB_POOL_THROTTLE: float = 2.0
-# VIEW_RATIO: float = .1
+# VIEW_RATIO: float = .01
+# BATCH_SIZE: int = ceil(6 / VIEW_RATIO / 64) * 64
 # FILTER: Optional[str] = '''
 # '''.strip()
+# '''
+# '''
+# assert FILTER is not None and FILTER != ''
 
 # Below are default values. 
 # DEBUG: bool = False

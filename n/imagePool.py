@@ -48,6 +48,9 @@ class ImagePool:
             self.n_download -= 1
             self.n_ready += 1
             self.printAnalytics()
+            if DEBUG:
+                print(f'{item.doc.id = }')
+                print(f'{item.doc.img_urls = }')
 
             self.queue.append(item)
             if self.waiter is not None:

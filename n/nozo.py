@@ -153,5 +153,9 @@ class ImageRequester:
       print('onReceive')
     if not self.exitLock.locked:
       return
-    poolItem.image = future.result().content
+    result = future.result()
+    poolItem.image = result.content
+    if DEBUG:
+      with open('./logs/last.content', 'wb') as f:
+        f.write(poolItem.image)
     self.imagePool.receive(poolItem)

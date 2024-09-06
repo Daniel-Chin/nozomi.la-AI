@@ -11,9 +11,18 @@ from doc import Doc
 import ai
 
 def main():
-    the_tag = input("tag=")
-    relevant_docs = []
     with Database(Lock()) as db:
+        the_tag = input("tag=")
+        tagInfo = db.loadTagInfo(the_tag)
+        print(tagInfo)
+        print(tagInfo.responses)
+        score = ai.score(tagInfo.responses)
+        print(f'{score = }')
+        overall = db.loadOverall()
+        baseline = ai.score(overall)
+        print(f'{score - baseline = }', )
+        input('Enter...')
+        relevant_docs = []
         doc_ids = db.listAllDocs()
         for doc_id in tqdm(doc_ids):
             doc : Doc = db.loadDoc(doc_id)
