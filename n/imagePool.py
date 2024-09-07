@@ -7,6 +7,7 @@ from typing import Callable, List
 from parameters import *
 from doc import Doc
 import webbrowser_wrap
+from sele_browser import SeleBrowser
 
 @dataclass
 class PoolItem:
@@ -15,7 +16,9 @@ class PoolItem:
     mode: str
 
 class ImagePool:
-    def __init__(self) -> None:
+    def __init__(self, seleB: SeleBrowser) -> None:
+        self.seleB = seleB
+
         self.n_idle = 0
         self.n_download = 0
         self.n_ready = 0
@@ -61,16 +64,16 @@ class ImagePool:
             
             if IMG_DOWNLOAD_IN_BROWSER:
                 img_urls = item.doc.getImgUrls()
-                if len(img_urls) == 1 and False:
-                    # doesn't work. nozomi somehow blocks the image.
+                if len(img_urls) == 1:
                     img_url = img_urls[0]
                 else:
                     img_url = f'https://nozomi.la/post/{item.doc.id}.html'
-                webbrowser_wrap.openNoBlock(
-                    f'http://localhost:{PORT}/panel?doc_id={item.doc.id}&img_url={img_url}', 
-                    new=1, 
-                    autoraise=False, 
-                )
+                # webbrowser_wrap.openNoBlock(
+                #     f'http://localhost:{PORT}/panel?doc_id={item.doc.id}&img_url={img_url}', 
+                #     new=1, 
+                #     autoraise=False, 
+                # )
+                self.seleB.newTab(item.doc.id, img_url)
     
     def consume(self, callback: Callable[[PoolItem], None]):
         with self.lock:

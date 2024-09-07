@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import typing as tp
 import json
 from threading import Thread
 
@@ -42,11 +43,13 @@ class MyOneServer(OneServer):
           }).encode())
         self.parent.imagePool.consume(callback)
       elif resource == '/img':
+        assert params is not None
         assert 'doc_id' in params
         def callback(poolItem: PoolItem):
           respond(self.socket, poolItem.image)
         self.parent.imagePool.consume(callback)
       elif resource == '/response':
+        assert params is not None
         if DEBUG:
           print('/response')
         doc_id = params['doc_id']
@@ -56,7 +59,7 @@ class MyOneServer(OneServer):
         assert doc_id == doc.id
         respond(self.socket, b'ok')
         self.socket.close() # Avoid browser re-using this connection
-        self.recordResponse(response, doc, poolItem.image)
+        self.parent.recordResponse(response, doc, poolItem.image)
         if DEBUG:
           print('todo')
         todo()
@@ -70,27 +73,11 @@ class MyOneServer(OneServer):
     except BrokenPipeError:
       print(f'Warning: BrokenPipeError for {request.target}')
     return True
-  
-  def recordResponse(self, response: str, doc: Doc, image: bytes):
-    if self.parent.db.doesDocExist(doc.id):
-      raise Exception('Error 2049284234')
-    doc.response = response
-    self.parent.db.saveDoc(doc)
-    self.parent.db.accOverall(response)
-    for tag in doc.tags:
-      self.parent.db.accTagInfo(tag, response)
-      if DEBUG:
-        print(self.parent.db.loadTagInfo(tag.name))
-    print(doc)
-    if response == RES_SAVE:
-      Thread(target=self.parent.db.saveImg, args=[
-        doc, [image], 
-      ], name='saveImg').start()
 
 class MyServer(Server):
   def __init__(
     self, imagePool: ImagePool, db: Database, 
-    my_OneServer=..., name='', port=80, listen=1, accept_timeout=0.5, 
+    my_OneServer:tp.Type=..., name='', port=80, listen=1, accept_timeout=0.5, 
     max_connections=4*32, 
   ):
     super().__init__(
@@ -113,6 +100,22 @@ class MyServer(Server):
   
   def interval(self):
     return super().interval()
+
+  def recordResponse(self, response: str, doc: Doc, image: bytes):
+    if self.db.doesDocExist(doc.id):
+      raise Exception('Error 2049284234')
+    doc.response = response
+    self.db.saveDoc(doc)
+    self.db.accOverall(response)
+    for tag in doc.tags:
+      self.db.accTagInfo(tag, response)
+      if DEBUG:
+        print(self.db.loadTagInfo(tag.name))
+    print(doc)
+    if response == RES_SAVE:
+      Thread(target=self.db.saveImg, args=[
+        doc, [image], 
+      ], name='saveImg').start()
 
 def startServer(imagePool, db):
   server = MyServer(
