@@ -20,13 +20,20 @@ class MyOneServer(OneServer):
   
   def handle(self, request: Request):
     try:
-      if request.target == '/':
+      resource, params_str = request.target.split('?')
+    except ValueError:
+      resource = request.target
+      params = None
+    else:
+      params = dict([x.split('=') for x in params_str.split('&')])
+    try:
+      if resource in ('/', '/panel'):
         with open('index.html', 'rb') as f:
           respond(self.socket, f.read())
       elif request.target in ['/styles.css', '/scripts.js', '/welcome.html']:
         with open(request.target.lstrip('/'), 'rb') as f:
           respond(self.socket, f.read())
-      elif request.target.split('?')[0] == '/next':
+      elif resource == '/next':
         def callback(poolItem: PoolItem):
           respond(self.socket, json.dumps({
             'doc_id': poolItem.doc.id, 
@@ -34,18 +41,16 @@ class MyOneServer(OneServer):
             'artists': poolItem.doc.getArtists(), 
           }).encode())
         self.parent.imagePool.consume(callback)
-      elif request.target.split('?')[0] == '/img':
-        param = request.target.split('?')[1]
-        doc_id = param.lstrip('doc_id=')
+      elif resource == '/img':
+        assert 'doc_id' in params
         def callback(poolItem: PoolItem):
           respond(self.socket, poolItem.image)
         self.parent.imagePool.consume(callback)
-      elif request.target.split('?')[0] == '/response':
+      elif resource == '/response':
         if DEBUG:
           print('/response')
-        params = request.target.split('?')[1].split('&')
-        doc_id = params[0].lstrip('doc_id=')
-        response = params[1].lstrip('response=')
+        doc_id = params['doc_id']
+        response = params['response']
         poolItem, todo = self.parent.imagePool.pop()
         doc = poolItem.doc
         assert doc_id == doc.id

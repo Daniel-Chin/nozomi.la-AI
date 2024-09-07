@@ -132,6 +132,9 @@ class ImageRequester:
       if self.exitLock.acquire(timeout=wait_time):
         self.exitLock.release()
         return
+    if IMG_DOWNLOAD_IN_BROWSER:
+      self.onReceive(None, poolItem)
+      return
     if DEBUG:
       print('Requesting image...')
     try:
@@ -153,9 +156,10 @@ class ImageRequester:
       print('onReceive')
     if not self.exitLock.locked:
       return
-    result = future.result()
-    poolItem.image = result.content
-    if DEBUG:
-      with open('./logs/last.content', 'wb') as f:
-        f.write(poolItem.image)
+    if not IMG_DOWNLOAD_IN_BROWSER:
+      result = future.result()
+      poolItem.image = result.content
+      if DEBUG:
+        with open('./logs/last.content', 'wb') as f:
+          f.write(poolItem.image)
     self.imagePool.receive(poolItem)

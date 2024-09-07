@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from concurrent.futures import Future
 from threading import Lock
@@ -5,6 +6,7 @@ from typing import Callable, List
 
 from parameters import *
 from doc import Doc
+import webbrowser_wrap
 
 @dataclass
 class PoolItem:
@@ -56,6 +58,12 @@ class ImagePool:
             if self.waiter is not None:
                 self.waiter(item)
                 self.waiter = None
+            
+            webbrowser_wrap.openNoBlock(
+                f'http://localhost:{PORT}/panel?doc_id={item.doc.id}', 
+                new=1, 
+                autoraise=False, 
+            )
     
     def consume(self, callback: Callable[[PoolItem], None]):
         with self.lock:

@@ -24,6 +24,7 @@ const EVALING = 'EAVLING';
 let stage = WAITING;
 const globalObj = {
   doc_id: null, 
+  img_download_in_browser: null,
 }
 
 let artist_str = '';
@@ -38,8 +39,29 @@ window.onload = () => {
     b.addEventListener('click', onClick.bind(null, response));
     buttonDiv.appendChild(b);
   }
-  askNew();
+
+  switch (window.location.pathname) {
+    case '/':
+      globalObj.img_download_in_browser = false;
+      askNew();
+      break;
+    case '/panel':
+      globalObj.img_download_in_browser = true;
+      const imgDiv = document.getElementById('imgdiv');
+      imgDiv.innerHTML = 'Press a button according to the image.';
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      globalObj.doc_id = urlParams.get('doc_id');
+      window.open(`https://nozomi.la/post/${
+        globalObj.doc_id
+      }.html`, '_blank');
+      break;
+    default:
+      alert('Invalid URL');
+      break;
+  }
 };
+
 
 const askNew = () => {
   const xmlHttp = new XMLHttpRequest();
@@ -87,7 +109,7 @@ const askNew = () => {
 };
 
 const onClick = (response) => {
-  if (stage !== EVALING) {
+  if (! globalObj.img_download_in_browser && stage !== EVALING) {
     alert('Too soon.');
     return;
   }
@@ -95,10 +117,15 @@ const onClick = (response) => {
   xmlHttp.onreadystatechange = () => {
     if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
       // console.log(xmlHttp.responseText);
-      stage = WAITING;
       const imgDiv = document.getElementById('imgdiv');
-      imgDiv.innerHTML = 'Loading...';
-      askNew();
+      if (globalObj.img_download_in_browser) {
+        imgDiv.innerHTML = 'Done. Close this tab.';
+        window.close();
+      } else {
+        stage = WAITING;
+        imgDiv.innerHTML = 'Loading...';
+        askNew();
+      }
     }
   }
   xmlHttp.open(
@@ -107,8 +134,10 @@ const onClick = (response) => {
     }&response=${response}`, true, 
   );
   xmlHttp.send(null);
-  if (response === RES_SAVE) {
-    alert('Artists: \n' + artist_str);
+  if (! globalObj.img_download_in_browser) {
+    if (response === RES_SAVE) {
+      alert('Artists: \n' + artist_str);
+    }
   }
   const artistsUl = document.getElementById('artists-name');
   while (artistsUl.firstChild) {
