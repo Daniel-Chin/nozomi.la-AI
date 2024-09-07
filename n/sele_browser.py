@@ -96,3 +96,11 @@ document.body.appendChild(script);
             image_data = base64.b64decode(image_base64)
 
             self.db.saveImg(doc, [image_data])
+    
+    def getCurrentDocUrl(self):
+        with self.lock:
+            assert self.driver is not None
+            self.driver.switch_to.window(self.driver.window_handles[-1])
+            doc_id = self.roster[self.driver.current_url]
+            url = f'https://nozomi.la/post/{doc_id}.html'
+            return url

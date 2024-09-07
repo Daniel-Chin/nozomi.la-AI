@@ -3,6 +3,7 @@ import threading
 from shared import *
 from server import MyServer
 from sele_browser import SeleBrowser
+from webbrowser_wrap import openNoBlock
 
 shortcuts = [
     ('n', RES_NEGATIVE), 
@@ -24,6 +25,10 @@ def interactive(server: MyServer, seleB: SeleBrowser):
         else:
             if op == 'q':
                 return
+            elif op == 'open':
+                url = seleB.getCurrentDocUrl()
+                openNoBlock(url, 1)
+                continue
             print('invalid response')
             continue
         poolItem, todo = server.imagePool.pop()
