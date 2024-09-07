@@ -26,8 +26,14 @@ class Doc:
   def getImgUrls(self):
     result = []
     for x in self.img_urls:
-      if x.startswith('https://i.nozomi.la'):
-        x = x.replace('i.nozomi.la', 'w.nozomi.la')
+      to_webp = False
+      for to_webp_format in 'ip':
+        prefix = f'https://{to_webp_format}.nozomi.la'
+        if x.startswith(prefix):
+          to_webp = True
+          x = x.replace(prefix, 'https://w.nozomi.la')
+          break
+      if to_webp:
         parts = x.split('.')
         x = '.'.join(parts[:-1]) + '.webp'
       result.append(x)
