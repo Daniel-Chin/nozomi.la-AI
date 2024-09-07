@@ -19,48 +19,51 @@ class MyOneServer(OneServer):
     self.parent: MyServer
   
   def handle(self, request: Request):
-    if request.target == '/':
-      with open('index.html', 'rb') as f:
-        respond(self.socket, f.read())
-    elif request.target in ['/styles.css', '/scripts.js', '/welcome.html']:
-      with open(request.target.lstrip('/'), 'rb') as f:
-        respond(self.socket, f.read())
-    elif request.target.split('?')[0] == '/next':
-      def callback(poolItem: PoolItem):
-        respond(self.socket, json.dumps({
-          'doc_id': poolItem.doc.id, 
-          'mode': poolItem.mode,
-          'artists': poolItem.doc.getArtists(), 
-        }).encode())
-      self.parent.imagePool.consume(callback)
-    elif request.target.split('?')[0] == '/img':
-      param = request.target.split('?')[1]
-      doc_id = param.lstrip('doc_id=')
-      def callback(poolItem: PoolItem):
-        respond(self.socket, poolItem.image)
-      self.parent.imagePool.consume(callback)
-    elif request.target.split('?')[0] == '/response':
-      if DEBUG:
-        print('/response')
-      params = request.target.split('?')[1].split('&')
-      doc_id = params[0].lstrip('doc_id=')
-      response = params[1].lstrip('response=')
-      poolItem, todo = self.parent.imagePool.pop()
-      doc = poolItem.doc
-      assert doc_id == doc.id
-      respond(self.socket, b'ok')
-      self.socket.close() # Avoid browser re-using this connection
-      self.recordResponse(response, doc, poolItem.image)
-      if DEBUG:
-        print('todo')
-      todo()
-      if DEBUG:
-        print('after todo')
-      return False
-    elif request.target in ['/favicon.ico']:
-      respond(self.socket, b'no icon sorry')
-    else:
-      print('Unknown request:', request.target)
+    try:
+      if request.target == '/':
+        with open('index.html', 'rb') as f:
+          respond(self.socket, f.read())
+      elif request.target in ['/styles.css', '/scripts.js', '/welcome.html']:
+        with open(request.target.lstrip('/'), 'rb') as f:
+          respond(self.socket, f.read())
+      elif request.target.split('?')[0] == '/next':
+        def callback(poolItem: PoolItem):
+          respond(self.socket, json.dumps({
+            'doc_id': poolItem.doc.id, 
+            'mode': poolItem.mode,
+            'artists': poolItem.doc.getArtists(), 
+          }).encode())
+        self.parent.imagePool.consume(callback)
+      elif request.target.split('?')[0] == '/img':
+        param = request.target.split('?')[1]
+        doc_id = param.lstrip('doc_id=')
+        def callback(poolItem: PoolItem):
+          respond(self.socket, poolItem.image)
+        self.parent.imagePool.consume(callback)
+      elif request.target.split('?')[0] == '/response':
+        if DEBUG:
+          print('/response')
+        params = request.target.split('?')[1].split('&')
+        doc_id = params[0].lstrip('doc_id=')
+        response = params[1].lstrip('response=')
+        poolItem, todo = self.parent.imagePool.pop()
+        doc = poolItem.doc
+        assert doc_id == doc.id
+        respond(self.socket, b'ok')
+        self.socket.close() # Avoid browser re-using this connection
+        self.recordResponse(response, doc, poolItem.image)
+        if DEBUG:
+          print('todo')
+        todo()
+        if DEBUG:
+          print('after todo')
+        return False
+      elif request.target in ['/favicon.ico']:
+        respond(self.socket, b'no icon sorry')
+      else:
+        print('Unknown request:', request.target)
+    except BrokenPipeError:
+      print(f'Warning: BrokenPipeError for {request.target}')
     return True
   
   def recordResponse(self, response: str, doc: Doc, image: bytes):
