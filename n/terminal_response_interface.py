@@ -1,6 +1,7 @@
 import threading
 
 from shared import *
+from parameters import *
 from server import MyServer
 from sele_browser import SeleBrowser
 from webbrowser_wrap import openNoBlock
@@ -16,8 +17,9 @@ shortcuts = [
 
 def interactive(server: MyServer, seleB: SeleBrowser):
     while True:
-        print(*shortcuts, sep='\n')
-        print('"q" to quit.')
+        if not EXPERT:
+            print(*shortcuts, sep='\n')
+            print('"q" to quit.')
         op = input('response > ').lower()
         for s, response in shortcuts:
             if s == op:
