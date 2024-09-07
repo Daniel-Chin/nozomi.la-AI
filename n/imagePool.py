@@ -59,11 +59,18 @@ class ImagePool:
                 self.waiter(item)
                 self.waiter = None
             
-            webbrowser_wrap.openNoBlock(
-                f'http://localhost:{PORT}/panel?doc_id={item.doc.id}', 
-                new=1, 
-                autoraise=False, 
-            )
+            if IMG_DOWNLOAD_IN_BROWSER:
+                img_urls = item.doc.getImgUrls()
+                if len(img_urls) == 1 and False:
+                    # doesn't work. nozomi somehow blocks the image.
+                    img_url = img_urls[0]
+                else:
+                    img_url = f'https://nozomi.la/post/{item.doc.id}.html'
+                webbrowser_wrap.openNoBlock(
+                    f'http://localhost:{PORT}/panel?doc_id={item.doc.id}&img_url={img_url}', 
+                    new=1, 
+                    autoraise=False, 
+                )
     
     def consume(self, callback: Callable[[PoolItem], None]):
         with self.lock:

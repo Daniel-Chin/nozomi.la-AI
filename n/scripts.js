@@ -52,9 +52,9 @@ window.onload = () => {
       const queryString = window.location.search;
       const urlParams = new URLSearchParams(queryString);
       globalObj.doc_id = urlParams.get('doc_id');
-      window.open(`https://nozomi.la/post/${
-        globalObj.doc_id
-      }.html`, '_blank');
+      const img_url = urlParams.get('img_url');
+      updateLinkToNozo();
+      window.open(img_url, '_blank');
       break;
     default:
       alert('Invalid URL');
@@ -62,6 +62,11 @@ window.onload = () => {
   }
 };
 
+const updateLinkToNozo = () => {
+  const url = `https://nozomi.la/post/${globalObj.doc_id}.html`
+  const link = document.getElementById('link2nozo');
+  link.value = url;
+}
 
 const askNew = () => {
   const xmlHttp = new XMLHttpRequest();
@@ -88,9 +93,7 @@ const askNew = () => {
         h2.innerHTML = `${mode} Mode`;
         h2.title = 'This image is randomly sampled';
       }
-      const url = `https://nozomi.la/post/${doc_id}.html`
-      const link = document.getElementById('link2nozo');
-      link.value = url;
+      updateLinkToNozo();
       const artistsUl = document.getElementById('artists-name');
       while (artistsUl.firstChild) {
         artistsUl.removeChild(artistsUl.firstChild);
