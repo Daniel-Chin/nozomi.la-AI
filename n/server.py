@@ -112,7 +112,7 @@ class MyServer(Server):
       if DEBUG:
         print(self.db.loadTagInfo(tag.name))
     print(doc)
-    if response == RES_SAVE:
+    if not IMG_DOWNLOAD_IN_BROWSER and response == RES_SAVE:
       Thread(target=self.db.saveImg, args=[
         doc, [image], 
       ], name='saveImg').start()

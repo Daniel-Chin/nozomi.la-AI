@@ -29,5 +29,7 @@ def interactive(server: MyServer, seleB: SeleBrowser):
         poolItem, todo = server.imagePool.pop()
         doc = poolItem.doc
         server.recordResponse(response, doc, poolItem.image)
+        if response == RES_SAVE:
+            seleB.save(doc)
         seleB.closeTabOfDocId(doc.id)
         threading.Thread(target=todo).start()

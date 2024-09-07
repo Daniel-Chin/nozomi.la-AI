@@ -24,9 +24,9 @@ def main():
   
   exitLock = Lock()
   exitLock.acquire()
-  with SeleBrowser().context() as seleB:
-    imagePool = ImagePool(seleB)
-    with Database(exitLock) as db:
+  with Database(exitLock) as db:
+    with SeleBrowser(db).context() as seleB:
+      imagePool = ImagePool(seleB)
       server = startServer(imagePool, db)
       with FuturesSession(max_workers=MAX_WORKERS) as session:
         imageRequester = ImageRequester(
