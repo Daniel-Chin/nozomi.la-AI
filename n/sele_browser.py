@@ -85,10 +85,10 @@ document.body.appendChild(script);
             image_base64 = self.driver.execute_script("""
                 var img = arguments[0];
                 var canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
+                canvas.width = img.width * 4;
+                canvas.height = img.height * 4;
                 var ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, img.width, img.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 return canvas.toDataURL('image/webp').substring(22);  // Remove the "data:image/webp;base64," prefix
             """, image_element)
 
