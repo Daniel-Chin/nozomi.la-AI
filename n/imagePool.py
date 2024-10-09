@@ -26,6 +26,8 @@ class ImagePool:
         self.lock = Lock()
         self.queue: List[PoolItem] = []
         self.waiter = None
+
+        self.is_over = False
     
     def activate(
         self, size: int, request: Callable[[], Future], 
@@ -64,7 +66,7 @@ class ImagePool:
             
             if IMG_DOWNLOAD_IN_BROWSER:
                 img_urls = item.doc.getImgUrls()
-                if len(img_urls) == 1:
+                if len(img_urls) == 1 and item.doc.img_type != 'mp4':
                     img_url = img_urls[0]
                 else:
                     img_url = f'https://nozomi.la/post/{item.doc.id}.html'
@@ -89,7 +91,12 @@ class ImagePool:
     
     def pop(self):
         with self.lock:
-            item = self.queue.pop(0)
+            try:
+                item = self.queue.pop(0)
+            except IndexError:
+                if self.is_over:
+                    raise EOFError('Queue empty after over. This is normal.')
+                raise
         
             self.n_ready -= 1
             self.n_idle += 1

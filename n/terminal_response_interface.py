@@ -33,7 +33,10 @@ def interactive(server: MyServer, seleB: SeleBrowser):
                 continue
             print('invalid response')
             continue
-        poolItem, todo = server.imagePool.pop()
+        try:
+            poolItem, todo = server.imagePool.pop()
+        except EOFError:
+            return
         doc = poolItem.doc
         server.recordResponse(response, doc, poolItem.image)
         if response == RES_SAVE:

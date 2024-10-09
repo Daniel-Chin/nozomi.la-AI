@@ -110,6 +110,10 @@ def HumanInLoop(
   session, imageRequester: ImageRequester, db: Database, 
   exitLock: Lock, 
 ):
+  def noMore():
+    print('There is no more! Enter "q" to quit...')
+    imageRequester.imagePool.is_over = True
+  
   blacklist = parseBlacklist(db)
   print('blacklist is', blacklist)
   print('If at least one of them show up in a doc, the doc will not show up, not even in EXPLORE mode.')
@@ -126,7 +130,7 @@ def HumanInLoop(
       try:
         pool = askMaster(batch_i * BATCH_SIZE, (batch_i + 1) * BATCH_SIZE)
       except PageOutOfRange:
-        print('There is no more! Enter "q" to quit...')
+        noMore()
         return
       if DEBUG:
         print('asked master')
@@ -140,7 +144,7 @@ def HumanInLoop(
         if json is not None:
           json_lookup[population[i]] = json
       if not json_lookup:
-        print('There is no more. Enter "q" to quit...')
+        noMore()
         return
       while len(json_lookup) >= len(pool) * (1 - VIEW_RATIO):
         has_stuff = True
