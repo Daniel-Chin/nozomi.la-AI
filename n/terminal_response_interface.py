@@ -1,5 +1,10 @@
 import threading
 
+try:
+    from readchar import readkey
+except ImportError:
+    readkey = input
+
 from shared import *
 from parameters import *
 from server import MyServer
@@ -20,7 +25,8 @@ def interactive(server: MyServer, seleB: SeleBrowser):
         if not EXPERT:
             print(*shortcuts, sep='\n')
             print('"q" to quit.')
-        op = input('response > ').lower()
+        print('response > ', end='', flush=True)
+        op = input().lower()
         for s, response in shortcuts:
             if s == op:
                 break
