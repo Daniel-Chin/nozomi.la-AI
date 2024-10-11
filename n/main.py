@@ -20,7 +20,8 @@ def main():
   dname = os.path.dirname(abspath)
   os.chdir(dname)
 
-  openBrowser()
+  if not IMG_DOWNLOAD_IN_BROWSER:
+    openBrowser()
   
   exitLock = Lock()
   exitLock.acquire()
