@@ -37,7 +37,8 @@ def interactive(server: MyServer, seleB: SeleBrowser):
                 url = seleB.getCurrentDocUrl()
                 openNoBlock(url, 1)
                 continue
-            print('invalid response')
+            print('invalid response. commands:')
+            print('q, open', *shortcuts, sep=', ')
             continue
         try:
             poolItem, todo = server.imagePool.pop()
