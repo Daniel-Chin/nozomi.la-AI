@@ -72,11 +72,12 @@ class Database:
     with self.okAfterClose():
       return doc_id in self._docs
 
-  def saveImg(self, doc: Doc, imgs: List[bytes]):
+  def saveImg(self, doc: Doc, imgs: List[bytes], force_ext: str | None = None):
     # also writes `doc.local_filenames`
     doc.local_filenames = []
     for i, content in enumerate(imgs):
-      filename = f'{doc.id}_{i}.{doc.img_type}'
+      ext = force_ext or doc.img_type
+      filename = f'{doc.id}_{i}.{ext}'
       with open(path.join(IMGS, filename), 'wb') as f:
         f.write(content)
       doc.local_filenames.append(filename)

@@ -89,13 +89,13 @@ document.body.appendChild(script);
                 canvas.height = img.height * 4;
                 var ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                return canvas.toDataURL('image/webp').substring(22);  // Remove the "data:image/webp;base64," prefix
+                return canvas.toDataURL('image/png').substring(21);  // Remove the "data:image/png;base64," prefix
             """, image_element)
 
             # Decode the base64 string
             image_data = base64.b64decode(image_base64)
 
-            self.db.saveImg(doc, [image_data])
+            self.db.saveImg(doc, [image_data], 'png')
     
     def getCurrentDocUrl(self):
         with self.lock:
