@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 import typing as tp
 import time
-from threading import Lock
+from threading import Lock, Thread
 import base64
 
 from selenium import webdriver
@@ -95,7 +95,9 @@ document.body.appendChild(script);
             # Decode the base64 string
             image_data = base64.b64decode(image_base64)
 
-            self.db.saveImg(doc, [image_data], 'png')
+            Thread(target=self.db.saveImg, args=[
+                doc, [image_data], 'png', 
+            ], name='saveImg').start()
     
     def getCurrentDocUrl(self):
         with self.lock:
