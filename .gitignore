@@ -1,5 +1,14 @@
 __pycache__/
+docs/
+imgs/
+tags/
+overall.pickle
+log.log
+blacklist.txt
 *.zip
-less/
+parameters.py
+tags_summary.csv
 already_tags.txt
-*.lnk
+tags_subtract.csv
+*.shelve.*
+exclusive
