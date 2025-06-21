@@ -1,0 +1,10 @@
+[project]
+name = "nozo-client"
+version = "0.1.0"
+description = "An AI client over nozomi.la"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "requests-futures>=1.0.2",
+    "selenium>=4.33.0",
+]

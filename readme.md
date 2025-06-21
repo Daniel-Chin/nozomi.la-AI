@@ -16,6 +16,9 @@ This tool can help you find works that you like.
 This tool also allows you to better understand your own preferences. Run summarizeTags.py to generate the report. You will be surprised.  
 本工具可以助你搜集喜欢的作品，也可助你更好地理解自己的口味。时不时运行 summarizeTags.py 来查看自己的偏好，你可能会惊讶。  
 
+## How to use
+`uv run python main.py`
+
 ## Explore mode VS Exploit mode  
 In Exploit mode, you see works that the AI predicts you will like.  
 In EXPLORE Mode, the AI shows you random documents.  
